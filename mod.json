@@ -1,4 +1,6 @@
 {
+    "name": "Gaster's Cool Social Network",
+    "hidden": true,
     "id": "gcsn",
     "plugin": {
         "name": "GCSN"

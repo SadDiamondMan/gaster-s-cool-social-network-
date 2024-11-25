@@ -1,18 +1,25 @@
 ---@class Lib
 local Lib = {}
-
+local function getConfig(conf)
+    local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
+    if not ok then return ({
+        ["domain"] = "serveo.net",
+        ["port"] = 25574,
+        ["chatBind"] = "/"
+    })[conf] end
+    return result
+end
 Game.socket = require("socket")
 
 Game.client = assert(
     Game.socket.connect(
-        Kristal.getLibConfig("gasterscoolsocialnetwork", "domain"),
-        Kristal.getLibConfig("gasterscoolsocialnetwork", "port")
+        getConfig("domain"),
+        getConfig("port")
     )
 )
 
 local socket = Game.socket
 local json = JSON
-local nbt = libRequire("gasterscoolsocialnetwork","scripts.main.shared.nbt")
 
 local function sendToServer(client, message)
     local encodedMessage = json.encode(message)
@@ -193,7 +200,7 @@ end
 function Lib:onKeyPressed(key, is_repeat)
     if (
         not is_repeat
-        and key == Kristal.getLibConfig("gasterscoolsocialnetwork", "chatBind")
+        and key == getConfig("chatBind")
         and not self.chat_box.is_open
     ) then
         self.chat_box:open()

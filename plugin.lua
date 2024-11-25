@@ -1,0 +1,1 @@
+return love.filesystem.load(Kristal.Mods.data.gcsn.path.."/lib.lua")()

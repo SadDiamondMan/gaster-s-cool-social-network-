@@ -202,6 +202,7 @@ function Server:processClientMessage(client, data)
             local id = message.uuid
             if #message.message == 0 then return end
             local sender = self.players[id]
+            print(sender.username, message.message)
             for _, reciever in pairs(self.players) do
                 
                 if reciever.map == sender.map then

@@ -100,7 +100,7 @@ function Lib:updateBattle(...)
     end
 
     -- Throttle player position update packets
-    if currentTime - lastUpdateTime >= THROTTLE_INTERVAL then
+    if currentTime - lastUpdateTime >= THROTTLE_INTERVAL and Game.battle then
         local player = Game.battle.party[1]
         local updateMessage = {
             command = "battle",

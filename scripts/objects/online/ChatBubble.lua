@@ -26,6 +26,7 @@ function ChatBubble:init(actor, text, x, y)
     self.rectangle = Rectangle(x_offset, y_offset, self.text:getSize())
     self:addChild(self.rectangle)
     self:addChild(self.text)
+    self.alphafx = self:addFX(AlphaFX(1))
     self.text.debug_select = false
     self.rectangle.debug_select = false
     self.rectangle.alpha = 0.5
@@ -41,9 +42,7 @@ function ChatBubble:update()
     self.lifetime = self.lifetime - DT
     if self.lifetime < 0 then return self:remove() end
     if self.lifetime < 1 then
-        self.alpha = self.lifetime
-        self.text.alpha = self.lifetime
-        self.rectangle.alpha = self.lifetime * 0.5
+        self.alphafx.alpha = self.lifetime
     end
 end
 

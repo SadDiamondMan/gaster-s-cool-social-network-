@@ -166,6 +166,7 @@ function Server:processClientMessage(client, data)
                 player.actor = message.actor
                 player.sprite = message.sprite
                 player.lastUpdate = Socket.gettime()
+                player.state = "world"
             end
         elseif subCommand == "inMap" then
             local id = message.uuid
@@ -210,6 +211,18 @@ function Server:processClientMessage(client, data)
                         message = message.message
                     })
                 end
+            end
+        end
+    elseif command == "battle" then
+        if subCommand == "update" then
+            local player = self:getPlayerFromClient(client)
+            if player then
+                player.username = message.username
+                player.encounter = message.encounter or player.encounter
+                player.actor = message.actor
+                player.sprite = message.sprite
+                player.lastUpdate = Socket.gettime()
+                player.state = "battle"
             end
         end
     elseif command == "disconnect" then

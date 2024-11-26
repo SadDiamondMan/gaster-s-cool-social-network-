@@ -62,7 +62,7 @@ function Lib:init()
     end)
     Utils.hook(Battle, "update", function (orig, batl, ...)
         orig(batl, ...)
-        self:updateBattle()
+        self:updateBattle(batl)
     end)
 end
 function Lib:postInit()
@@ -91,7 +91,7 @@ function Lib:update()
     end
 end
 
-function Lib:updateBattle(...)
+function Lib:updateBattle(batl, ...)
 
     local currentTime = love.timer.getTime()
 
@@ -100,15 +100,15 @@ function Lib:updateBattle(...)
     end
 
     -- Throttle player position update packets
-    if currentTime - lastUpdateTime >= THROTTLE_INTERVAL and Game.battle then
-        local player = Game.battle.party[1]
+    if currentTime - lastUpdateTime >= THROTTLE_INTERVAL and batl then
+        local player = batl.party[1]
         local updateMessage = {
             command = "battle",
             subCommand = "update",
             actor = player.actor.id,
             username = self.name,
             sprite = player.sprite.sprite_options[1],
-            encounter = Game.battle.encounter.id,
+            encounter = batl.encounter.id,
         }
         sendToServer(client, updateMessage)
         lastUpdateTime = currentTime

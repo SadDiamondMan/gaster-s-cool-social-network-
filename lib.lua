@@ -60,6 +60,10 @@ function Lib:init()
         orig(...)
         self:update()
     end)
+    Utils.hook(Battle, "update", function (orig, batl, ...)
+        orig(batl, ...)
+        self:updateBattle()
+    end)
 end
 function Lib:postInit()
     Game.stage:addChild(self.chat_box)
@@ -85,6 +89,31 @@ function Lib:update()
             gamestate = Game.state
         })
     end
+end
+
+function Lib:updateBattle(...)
+
+    local currentTime = love.timer.getTime()
+
+    local data = self:receiveFromServer(client)
+    if data then
+    end
+
+    -- Throttle player position update packets
+    if currentTime - lastUpdateTime >= THROTTLE_INTERVAL then
+        local player = Game.battle.party[1]
+        local updateMessage = {
+            command = "battle",
+            subCommand = "update",
+            actor = player.actor.id,
+            username = self.name,
+            sprite = player.sprite.sprite_options[1],
+            encounter = Game.battle.encounter.id,
+        }
+        sendToServer(client, updateMessage)
+        lastUpdateTime = currentTime
+    end
+
 end
 
 function Lib:updateWorld(...)

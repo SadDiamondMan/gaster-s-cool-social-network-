@@ -112,7 +112,7 @@ function Lib:updateBattle(batl, ...)
 
                     if other_battler then
                         other_battler.name = playerData.username
-                        
+
                         if playerData.health then other_battler.health = playerData.health end
 
                         if other_battler.actor.id ~= playerData.actor then
@@ -143,7 +143,7 @@ function Lib:updateBattle(batl, ...)
                             other_battler = otherplr
                             other_battler.layer = -100
                             other_battler.encounterID = playerData.encounter
-                            Game.battle:addChild(other_player)
+                            Game.battle:addChild(other_battler)
                             self.other_battlers[playerData.uuid] = other_battler
                         end
                     end

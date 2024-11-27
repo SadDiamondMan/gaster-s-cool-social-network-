@@ -163,7 +163,7 @@ function Lib:updateWorld(...)
                             otherplr = Other_Player("dummy", playerData.x, playerData.y, playerData.username, playerData.uuid)
                         end
 
-                        if playerData.map == Game.world.map.id then
+                        if playerData.map == (Mod.info.id..":"..Game.world.map.id) then
                             -- Create a new player if it doesn't exist while making sure It's on the right map
                             other_player = otherplr
                             other_player.layer = Game.world.map.object_layer
@@ -200,7 +200,7 @@ function Lib:updateWorld(...)
             username = self.name,
             x = player.x,
             y = player.y,
-            map = Game.world.map.id or "null",
+            map = (Mod.info.id..":"..Game.world.map.id) or "null",
             actor = player.actor.id,
             sprite = player.sprite.sprite_options[1]
         }

@@ -70,6 +70,9 @@ function Lib:postInit()
     self.name = Game.save_name
     self.other_players = nil
     self.other_players = {}  -- Store other players
+
+    self.other_battlers = nil
+    self.other_battlers = {}  -- Store other players
     -- Register player with username and actor
     local registerMessage = {
         command = "register",
@@ -104,6 +107,47 @@ function Lib:updateBattle(batl, ...)
     if data then
         if data.command == "battle_update" then
             for _, playerData in ipairs(data.players) do
+                if playerData.uuid ~= self.uuid then
+                    local other_battler = self.other_battlers[playerData.uuid]
+
+                    if other_battler then
+                        other_battler.name = playerData.username
+                        
+                        if playerData.health then other_battler.health = playerData.health end
+
+                        if other_battler.actor.id ~= playerData.actor then
+                            
+                            local success, result = pcall(Other_Battler, playerData.actor, 0, 0, 0)
+                            if success then
+                                other_battler:setActor(playerData.actor)
+                            else
+                                other_battler:setActor("dummy")
+                            end
+                        end
+                        
+                        if other_battler.sprite.sprite_options[1] ~= playerData.sprite then
+                            other_battler:setSprite(playerData.sprite)
+                        end
+
+                    else
+                        local otherplr
+                        local success, result = pcall(Other_Battler, playerData.actor, 200, 200, playerData.username, playerData.uuid)
+                        if success then
+                            otherplr = result
+                        else
+                            otherplr = Other_Battler("dummy", 200, 200, playerData.username, playerData.uuid)
+                        end
+
+                        if playerData.encounter == batl.encounter.id then
+                            -- Create a new player if it doesn't exist while making sure It's on the right map
+                            other_battler = otherplr
+                            other_battler.layer = -100
+                            other_battler.encounterID = playerData.encounter
+                            Game.battle:addChild(other_player)
+                            self.other_battlers[playerData.uuid] = other_battler
+                        end
+                    end
+                end
                 
             end
         elseif data.command == "spell" then

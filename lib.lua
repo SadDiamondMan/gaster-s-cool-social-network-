@@ -91,6 +91,11 @@ function Lib:update()
     end
 end
 
+function Lib:unload()
+    sendToServer(client, {command = "disconnect"})
+    client:close()
+end
+
 function Lib:updateBattle(batl, ...)
 
     local currentTime = love.timer.getTime()

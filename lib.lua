@@ -102,6 +102,13 @@ function Lib:updateBattle(batl, ...)
 
     local data = self:receiveFromServer(client)
     if data then
+        if data.command == "battle_update" then
+            for _, playerData in ipairs(data.players) do
+                print(playerData.username)
+            end
+        elseif data.command == "spell" then
+        elseif data.command == "item" then
+        end
     end
 
     -- Throttle player position update packets
@@ -114,6 +121,7 @@ function Lib:updateBattle(batl, ...)
             username = self.name,
             sprite = player.sprite.sprite_options[1],
             encounter = batl.encounter.id,
+            health = {player.chara.health, player.chara.stats.health}
         }
         sendToServer(client, updateMessage)
         lastUpdateTime = currentTime

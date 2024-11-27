@@ -131,6 +131,43 @@ function Server:sendUpdatesToClients()
     end
 end
 
+function Server:sendBattleUpdatesToClients()
+    local updates = {}
+
+    -- Collect updates per encounter
+    for id, player in pairs(self.players) do
+        if player.client and updates[player.encounter] and player.state == "battle" then
+            updates[player.encounter] = updates[player.encounter] or {}
+            table.insert(updates[player.encounter], {
+                uuid = id,
+                username = player.username,
+                actor = player.actor,
+                sprite = player.sprite,
+                health = player.health
+            })
+        end
+    end
+
+    -- Send updates only to players on the same encounter, excluding the player's own UUID
+    for id, player in pairs(self.players) do
+        if player.client and updates[player.encounter] then
+            -- Filter out the player's own UUID
+            local filteredUpdates = {}
+            for _, update in ipairs(updates[player.encounter]) do
+                if update.uuid ~= id then
+                    table.insert(filteredUpdates, update)
+                end
+            end
+
+            local updateMessage = {
+                command = "battle_update",
+                players = filteredUpdates
+            }
+            self:sendClientMessage(player.client, updateMessage)
+        end
+    end
+end
+
 -- Handle client messages
 function Server:processClientMessage(client, data)
     local ok, message = pcall(JSON.decode, data)
@@ -223,6 +260,7 @@ function Server:processClientMessage(client, data)
                 player.actor = message.actor
                 player.sprite = message.sprite
                 player.lastUpdate = Socket.gettime()
+                player.health = message.health
                 player.state = "battle"
             end
         end
@@ -263,6 +301,7 @@ function Server:tick()
     local currentTime = Socket.gettime()
     if (currentTime - self.lastUpdateTime) >= self.updateInterval then
         self:sendUpdatesToClients()
+        self:sendBattleUpdatesToClients()
         self.lastUpdateTime = currentTime
     end
 

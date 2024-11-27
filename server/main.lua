@@ -30,12 +30,13 @@ function love.draw()
         yOffset = yOffset + 15
     end
     for _, player in pairs(server.players) do
-        if player.state == "battle" and player.username and player.uuid and player.encounter and player.actor and player.sprite then
+        if player.state == "battle" and player.username and player.uuid and player.encounter and player.actor and player.sprite and player.health then
             line("Player: " .. player.username)
             line("UUID: " .. player.uuid)
             line("Actor: " .. player.actor)
             line("Sprite: " .. player.sprite)
             line("Encounter: " .. player.encounter)
+            line("Health: " .. player.health[1] .." / ".. player.health[2])
             yOffset = yOffset + 10
         elseif player.state == "world" and player.username and player.uuid and player.map and player.actor and player.x and player.y then
             line("Player: " .. player.username)

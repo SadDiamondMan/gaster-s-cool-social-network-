@@ -2,7 +2,7 @@
 
 -- Message from SadDiamondMan
 
-If you want to use this to make your own server and client and release it. 
+If you want to use this to make your own server and client and release it.
 
 -------------------------
 

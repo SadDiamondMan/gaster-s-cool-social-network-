@@ -97,7 +97,7 @@ function Server:sendUpdatesToClients()
 
     -- Collect updates per map
     for id, player in pairs(self.players) do
-        if player.client then
+        if player.client and player.state == "world" then
             updates[player.map] = updates[player.map] or {}
             table.insert(updates[player.map], {
                 uuid = id,
@@ -134,16 +134,18 @@ end
 function Server:sendBattleUpdatesToClients()
     local updates = {}
 
-    -- Collect updates per encounter
+    -- Collect updates per encountr
+
     for id, player in pairs(self.players) do
-        if player.client and updates[player.encounter] and player.state == "battle" then
+        if player.client and player.state == "battle" then
             updates[player.encounter] = updates[player.encounter] or {}
             table.insert(updates[player.encounter], {
                 uuid = id,
                 username = player.username,
                 actor = player.actor,
                 sprite = player.sprite,
-                health = player.health
+                health = player.health,
+                encounter = player.encounter
             })
         end
     end

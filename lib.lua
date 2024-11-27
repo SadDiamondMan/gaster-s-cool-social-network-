@@ -104,7 +104,7 @@ function Lib:updateBattle(batl, ...)
     if data then
         if data.command == "battle_update" then
             for _, playerData in ipairs(data.players) do
-                print(playerData.username)
+                
             end
         elseif data.command == "spell" then
         elseif data.command == "item" then

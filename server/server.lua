@@ -241,7 +241,11 @@ function Server:processClientMessage(client, data)
             local id = message.uuid
             if #message.message == 0 then return end
             local sender = self.players[id]
-            print(sender.username, message.message)
+            if sender then
+                print(sender.username, message.message)
+            else
+                print("unknown", message.message)
+            end
             for _, reciever in pairs(self.players) do
                 
                 if reciever.map == sender.map then
@@ -268,13 +272,15 @@ function Server:processClientMessage(client, data)
         elseif subCommand == "heal" then
             local target = message.heal_who
             
-            local player = self:getPlayerFromClient(target)
+            local player = self.players[message.heal_who]
 
             local heal = {
                 command = "heal",
                 amount = message.amount
             }
-            self:sendClientMessage(player.client, heal)
+            if player then
+                self:sendClientMessage(player.client, heal)
+            end
         end
     elseif command == "disconnect" then
         print("Player " .. self:getPlayerFromClient(client).username .. " disconnected")

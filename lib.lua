@@ -138,6 +138,7 @@ function Lib:init()
                 elseif batl.state_reason == "ITEM" then
                     batl:pushAction("ITEM", bus[batl.current_menu_y], batl.selected_item)
                 end
+                return
             end
             if Input.is("up", key) then
                 batl.ui_move:stop()

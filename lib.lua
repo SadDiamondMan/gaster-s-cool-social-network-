@@ -262,7 +262,11 @@ function Lib:updateBattle(batl, ...)
                 
             end
         elseif data.command == "heal" then
-            batl.party[1]:heal(data.amount)
+            if data.amount < 0 then
+                batl.party[1]:hurt(-data.amount)
+            else
+                batl.party[1]:heal(data.amount)
+            end
         end
     end
 

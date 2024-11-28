@@ -8,11 +8,29 @@ function Other_Battler:init(chara, x, y, name, uuid)
     self.x = x or 0
     self.y = y or 0
     self.uuid = uuid
+    self.chara = self
 
     self.alpha = 0
     self.fadingOut = false
     self.nametag = UserNametag(self, self.name)
     self:addChild(self.nametag)
+end
+
+function Other_Battler:getName()
+    return self.name
+end
+
+function Other_Battler:getHealth()
+    return self.health[1]
+end
+
+
+function Other_Battler:getStat(stat)
+    if stat == "health" then
+        return self.health[2]
+    elseif stat == "health_def" then
+        return self.health[2]
+    end
 end
 
 function Other_Battler:getDebugInfo()

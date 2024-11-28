@@ -64,29 +64,78 @@ function Lib:init()
         orig(batl, ...)
         self:updateBattle(batl)
     end)
-    Utils.hook(Battle, "onKeyPressed", function (orig, batl, key, ...)
-        if self.state == "PARTYSELECT" then
-            if Input.isConfirm(key) then
-                if self.encounter:onPartySelect(self.state_reason, self.current_menu_y) then return end
-                if Kristal.callEvent(KRISTAL_EVENT.onBattlePartySelect, self.state_reason, self.current_menu_y) then return end
-                self.ui_select:stop()
-                self.ui_select:play()
-                local bus = {}
-                for i, party in ipairs(batl.party) do
-                    table.insert(bus, party)
-                end
-                if self.state_reason == "SPELL" then
-                    self:pushAction("SPELL", self.party[self.current_menu_y], self.selected_spell)
-                elseif self.state_reason == "ITEM" then
-                    self:pushAction("ITEM", bus[self.current_menu_y], self.selected_item)
-                else
-                    self:nextParty()
-                end
-                return
+    Utils.hook(BattleUI, "drawState", function (orig, batl_ui, ...)
+        if Game.battle.state == "PARTYSELECT" then
+            local full_party = self:partyTable()
+
+            local page = math.ceil(Game.battle.current_menu_y / 3) - 1
+            local max_page = math.ceil(#full_party / 3) - 1
+            local page_offset = page * 3
+
+            local party = full_party[Game.battle.current_selecting].chara
+            if party.soul_color then
+                Draw.setColor(party.soul_color)
+            else
+                Draw.setColor(Game.battle.encounter:getSoulColor())
             end
+            local heart_sprite = batl_ui.heart_sprite
+            if party.heart_sprite then
+                heart_sprite = Assets.getTexture(party.heart_sprite)
+            end
+            Draw.draw(heart_sprite, 55, 30 + ((Game.battle.current_menu_y - page_offset) * 30))
+
+            local font = Assets.getFont("main")
+            love.graphics.setFont(font)
+
+            for index = page_offset+1, math.min(page_offset+3, #full_party) do
+                Draw.setColor(1, 1, 1, 1)
+
+                --if not full_party[index].chara then
+                --    love.graphics.print(full_party[index].name, 80, 50 + ((index - page_offset - 1) * 30))
+                --else
+                    love.graphics.print(full_party[index].chara:getName(), 80, 50 + ((index - page_offset - 1) * 30))
+                --end
+                
+                local mhp_perc = full_party[index].chara:getStat("health") / full_party[index].chara:getStat("health_def")
+                if mhp_perc <= 0 then
+                    Draw.setColor(1, 0, 0, 1)
+                    love.graphics.print("(Fallen)", 400, 50 + ((index - page_offset - 1) * 30))
+                else
+                    Draw.setColor(COLORS.dkgray)
+                    love.graphics.rectangle("fill", 400, 55 + ((index - page_offset - 1) * 30), 101, 16)
+
+                    Draw.setColor(PALETTE["action_health_bg"])
+                    love.graphics.rectangle("fill", 400, 55 + ((index - page_offset - 1) * 30), math.ceil(mhp_perc * 101), 16)
+
+                    local percentage = full_party[index].chara:getHealth() / full_party[index].chara:getStat("health")
+                    Draw.setColor(PALETTE["action_health"])
+                    love.graphics.rectangle("fill", 400, 55 + ((index - page_offset - 1) * 30), math.ceil(percentage * (math.ceil(mhp_perc * 101))), 16)
+                end
+            end
+
+            Draw.setColor(1, 1, 1, 1)
+            if page < max_page then
+                Draw.draw(batl_ui.arrow_sprite, 20, 120 + (math.sin(Kristal.getTime()*6) * 2))
+            end
+            if page > 0 then
+                Draw.draw(batl_ui.arrow_sprite, 20, 70 - (math.sin(Kristal.getTime()*6) * 2), 0, 1, -1)
+            end
+            return
         end
-        orig(batl, key, ...)
+        
+        orig(batl_ui, ...)
     end)
+end
+function Lib:partyTable()
+    local full_party = {}
+    for i, party in ipairs(Game.battle.party) do
+        table.insert(full_party, party)
+    end
+    for i, party in pairs(self.other_battlers) do
+        table.insert(full_party, party)
+    end
+    
+    return full_party
 end
 function Lib:postInit()
     Game.stage:addChild(self.chat_box)

@@ -265,6 +265,16 @@ function Server:processClientMessage(client, data)
                 player.health = message.health
                 player.state = "battle"
             end
+        elseif subCommand == "heal" then
+            local target = message.heal_who
+            
+            local player = self:getPlayerFromClient(target)
+
+            local heal = {
+                command = "heal",
+                amount = message.amount
+            }
+            self:sendClientMessage(player.client, heal)
         end
     elseif command == "disconnect" then
         print("Player " .. self:getPlayerFromClient(client).username .. " disconnected")

@@ -26,6 +26,13 @@ end
 
 function Other_Battler:heal(heal_amount)
     --send the heal_amount to the server
+    local updateMessage = {
+        command = "battle",
+        subCommand = "heal",
+        heal_who = self.uuid,
+        amount = heal_amount
+    }
+    Game:sendToServer(Game.client, updateMessage)
 end
 
 function Other_Battler:getStat(stat)

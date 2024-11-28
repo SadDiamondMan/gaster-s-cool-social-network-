@@ -27,6 +27,10 @@ local function sendToServer(client, message)
     client:send(encodedMessage .. "\n")
 end
 
+function Game:sendToServer(client, message) --do not say a word
+    sendToServer(client, message)
+end
+
 function Lib:receiveFromServer(client)
     local response, err, partial = client:receive()
     if partial then
@@ -257,8 +261,8 @@ function Lib:updateBattle(batl, ...)
                 end
                 
             end
-        elseif data.command == "spell" then
-        elseif data.command == "item" then
+        elseif data.command == "heal" then
+            batl.party[1]:heal(data.amount)
         end
     end
 

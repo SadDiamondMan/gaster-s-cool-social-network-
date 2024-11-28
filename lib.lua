@@ -64,6 +64,29 @@ function Lib:init()
         orig(batl, ...)
         self:updateBattle(batl)
     end)
+    Utils.hook(Battle, "onKeyPressed", function (orig, batl, key, ...)
+        if self.state == "PARTYSELECT" then
+            if Input.isConfirm(key) then
+                if self.encounter:onPartySelect(self.state_reason, self.current_menu_y) then return end
+                if Kristal.callEvent(KRISTAL_EVENT.onBattlePartySelect, self.state_reason, self.current_menu_y) then return end
+                self.ui_select:stop()
+                self.ui_select:play()
+                local bus = {}
+                for i, party in ipairs(batl.party) do
+                    table.insert(bus, party)
+                end
+                if self.state_reason == "SPELL" then
+                    self:pushAction("SPELL", self.party[self.current_menu_y], self.selected_spell)
+                elseif self.state_reason == "ITEM" then
+                    self:pushAction("ITEM", bus[self.current_menu_y], self.selected_item)
+                else
+                    self:nextParty()
+                end
+                return
+            end
+        end
+        orig(batl, key, ...)
+    end)
 end
 function Lib:postInit()
     Game.stage:addChild(self.chat_box)

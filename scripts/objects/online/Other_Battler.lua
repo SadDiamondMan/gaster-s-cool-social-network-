@@ -37,9 +37,9 @@ end
 
 function Other_Battler:getStat(stat)
     if stat == "health" then
-        return self.health[2]
+        return self.health[2] or "0"
     elseif stat == "health_def" then
-        return self.health[2]
+        return self.health[2] or "0"
     end
 end
 

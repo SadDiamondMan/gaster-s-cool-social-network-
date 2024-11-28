@@ -125,6 +125,40 @@ function Lib:init()
         
         orig(batl_ui, ...)
     end)
+    Utils.hook(Battle, "onKeyPressed", function (orig, batl, key, ...)
+        if batl.state == "PARTYSELECT" then
+            local bus = self:partyTable()
+            if Input.isConfirm(key) then
+                if batl.encounter:onPartySelect(batl.state_reason, batl.current_menu_y) then return end
+                if Kristal.callEvent(KRISTAL_EVENT.onBattlePartySelect, batl.state_reason, batl.current_menu_y) then return end
+                batl.ui_select:stop()
+                batl.ui_select:play()
+                if batl.state_reason == "SPELL" then
+                    batl:pushAction("SPELL", bus[batl.current_menu_y], batl.selected_spell)
+                elseif batl.state_reason == "ITEM" then
+                    batl:pushAction("ITEM", bus[batl.current_menu_y], batl.selected_item)
+                end
+            end
+            if Input.is("up", key) then
+                batl.ui_move:stop()
+                batl.ui_move:play()
+                batl.current_menu_y = batl.current_menu_y - 1
+                if batl.current_menu_y < 1 then
+                    batl.current_menu_y = #bus
+                end
+                return
+            elseif Input.is("down", key) then
+                batl.ui_move:stop()
+                batl.ui_move:play()
+                batl.current_menu_y = batl.current_menu_y + 1
+                if batl.current_menu_y > #bus then
+                    batl.current_menu_y = 1
+                end
+                return
+            end
+        end
+        orig(batl, key, ...)
+    end)
 end
 function Lib:partyTable()
     local full_party = {}

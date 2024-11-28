@@ -24,6 +24,9 @@ function Other_Battler:getHealth()
     return self.health[1]
 end
 
+function Other_Battler:heal(heal_amount)
+    --send the heal_amount to the server
+end
 
 function Other_Battler:getStat(stat)
     if stat == "health" then

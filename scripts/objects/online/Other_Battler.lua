@@ -21,6 +21,8 @@ function Other_Battler:getName()
 end
 
 function Other_Battler:getHealth()
+    if not self.health then return 0 end
+
     return self.health[1]
 end
 
@@ -47,10 +49,12 @@ function Other_Battler:hurt(heal_amount)
 end
 
 function Other_Battler:getStat(stat)
+    if not self.health then return 0 end
+
     if stat == "health" then
-        return self.health[2] or 0
+        return self.health[2]
     elseif stat == "health_def" then
-        return self.health[2] or 0
+        return self.health[2]
     end
 end
 

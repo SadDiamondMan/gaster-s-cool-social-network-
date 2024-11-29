@@ -132,6 +132,12 @@ function Lib:init()
     Utils.hook(Battle, "onKeyPressed", function (orig, batl, key, ...)
         if batl.state == "PARTYSELECT" then
             local bus = self:partyTable()
+
+            if not bus[batl.current_menu_y] then
+                batl.current_menu_y = 1
+                return
+            end
+
             if Input.isConfirm(key) then
                 if batl.encounter:onPartySelect(batl.state_reason, batl.current_menu_y) then return end
                 if Kristal.callEvent(KRISTAL_EVENT.onBattlePartySelect, batl.state_reason, batl.current_menu_y) then return end

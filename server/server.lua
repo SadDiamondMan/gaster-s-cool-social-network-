@@ -306,7 +306,7 @@ function Server:processClientMessage(client, data)
                 if #playersToRemove > 0 then
                     local removeMessage = {
                         command = "remove_battlers",
-                        players = playersToRemove
+                        battlers = playersToRemove
                     }
                     self:sendClientMessage(player.client, removeMessage)
                 end

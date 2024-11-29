@@ -267,6 +267,13 @@ function Lib:updateBattle(batl, ...)
             else
                 batl.party[1]:heal(data.amount)
             end
+        elseif data.command == "remove_battlers" then
+            for _, uuid in ipairs(data.battlers) do
+                if self.other_battlers[uuid] then
+                    self.other_battlers[uuid].fadingOut = true
+                    self.other_battlers[uuid] = nil
+                end
+            end
         end
     end
 
@@ -284,6 +291,23 @@ function Lib:updateBattle(batl, ...)
         }
         sendToServer(client, updateMessage)
         lastUpdateTime = currentTime
+    end
+
+    -- Throttle current players list packets
+    if currentTime - lastPlayerListTime >= THROTTLE_INTERVAL then
+        local playersList = {}
+        for uuid, _ in pairs(self.other_battlers) do
+            table.insert(playersList, uuid)
+        end
+
+        local currentPlayersMessage = {
+            command = "battle",
+            subCommand = "inParty",
+            username = self.name,
+            players = playersList
+        }
+        sendToServer(client, currentPlayersMessage)
+        lastPlayerListTime = currentTime
     end
 
 end

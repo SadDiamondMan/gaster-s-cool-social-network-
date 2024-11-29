@@ -281,6 +281,36 @@ function Server:processClientMessage(client, data)
             if player then
                 self:sendClientMessage(player.client, heal)
             end
+        elseif subCommand == "inParty" then
+            local id = message.uuid
+            local clientPlayers = message.players
+            local player = self:getPlayerFromClient(client)
+
+            if player then
+                local actualMapPlayers = {}
+                for otherId, otherPlayer in pairs(self.players) do
+                    if otherPlayer.encounter == player.encounter then
+                        actualMapPlayers[otherId] = true
+                    end
+                end
+
+                -- Determine which players to remove
+                local playersToRemove = {}
+                for _, clientPlayer in ipairs(clientPlayers) do
+                    if not actualMapPlayers[clientPlayer] then
+                        table.insert(playersToRemove, clientPlayer)
+                    end
+                end
+
+                -- Send removal message if needed
+                if #playersToRemove > 0 then
+                    local removeMessage = {
+                        command = "remove_battlers",
+                        players = playersToRemove
+                    }
+                    self:sendClientMessage(player.client, removeMessage)
+                end
+            end
         end
     elseif command == "disconnect" then
         print("Player " .. self:getPlayerFromClient(client).username .. " disconnected")

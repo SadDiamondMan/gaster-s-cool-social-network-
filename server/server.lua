@@ -289,7 +289,7 @@ function Server:processClientMessage(client, data)
             if player then
                 local actualMapPlayers = {}
                 for otherId, otherPlayer in pairs(self.players) do
-                    if otherPlayer.encounter == player.encounter then
+                    if otherPlayer.encounter == player.encounter and otherPlayer.state == "battle" then
                         actualMapPlayers[otherId] = true
                     end
                 end

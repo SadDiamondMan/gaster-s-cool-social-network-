@@ -4,8 +4,7 @@ local function getConfig(conf)
     local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
     if not ok then return (Kristal.Config["plugins/gcsn"] or {
         ["domain"] = "serveo.net",
-        ["port"] = 25574,
-        ["chatBind"] = "/"
+        ["port"] = 25574
     })[conf] end
     return result
 end
@@ -431,7 +430,7 @@ end
 function Lib:onKeyPressed(key, is_repeat)
     if (
         not is_repeat
-        and key == getConfig("chatBind")
+        and Input.is("gcsn_chat", key)
         and not self.chat_box.is_open
     ) then
         self.chat_box:open()

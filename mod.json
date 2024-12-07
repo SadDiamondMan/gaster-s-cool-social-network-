@@ -4,5 +4,13 @@
     "id": "gcsn",
     "plugin": {
         "name": "GCSN"
-    }
+    },
+    "keybinds": [
+        {
+            "name": "Chat",
+            "id": "gcsn_chat",
+            "keys": ["/"],
+            "gamepad": [],
+        },
+    ],
 }

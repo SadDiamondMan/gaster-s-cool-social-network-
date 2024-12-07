@@ -26,7 +26,6 @@ function GCSNOptionsHandler:init(menu)
         Kristal.Config["plugins/gcsn"] = {
             domain = "serveo.net",
             port = 25574,
-            chatBind = "/",
         }
     end
     self.plugconfig = Kristal.Config["plugins/gcsn"]

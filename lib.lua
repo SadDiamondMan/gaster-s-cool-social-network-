@@ -281,6 +281,9 @@ function Lib:updateBattle(batl, ...)
                     self.other_battlers[uuid] = nil
                 end
             end
+        elseif data.command == "chat" then
+            local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
+            self.chat_box:push({sender = data.username, content = Utils.split(data.message, "\n")})
         end
     end
 

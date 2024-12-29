@@ -27,7 +27,6 @@ function GCSNOptionsHandler:init(menu)
         Kristal.Config["plugins/gcsn"] = {
             domain = "serveo.net",
             port = 25574,
-            username = "PLAYER",
         }
     end
     self.plugconfig = Kristal.Config["plugins/gcsn"]
@@ -68,7 +67,7 @@ function GCSNOptionsHandler:onEnter(old_state)
     self.options = {
         domain = {self.plugconfig.domain},
         port = {tostring(self.plugconfig.port)},
-        username = {self.plugconfig.username or "PLAYER"}
+        username = {self.plugconfig.username or "(Use savedata name)"}
     }
     self.selected_option = 1
 
@@ -188,6 +187,9 @@ function GCSNOptionsHandler:onStateChange(old_state, state)
         self:openInput("domain")
     elseif state == "USERNAME" then
         self.menu.heart_target_x = 45 + 167
+        if self.options.username[1] == "(Use savedata name)" then
+            self.options.username[1] = ""
+        end
         self:openInput("username", function(letter)
             if not letter:match("%w") then return end
             return letter
@@ -221,7 +223,12 @@ function GCSNOptionsHandler:onInputSubmit(id)
     elseif id == "domain" then
         self.plugconfig["domain"] = self.options.domain[1]
     elseif id == "username" then
-        self.plugconfig["username"] = self.options.username[1]
+        if #self.options.username[1] > 0 and self.options.username[1]:match("^%w+$") then
+            self.plugconfig["username"] = self.options.username[1]
+        else
+            self.options.username[1] = "(Use savedata name)"
+            self.plugconfig["username"] = nil
+        end
     end
 
     Input.clear("return")

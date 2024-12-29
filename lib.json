@@ -11,6 +11,7 @@
     ],
     "config": {
         "domain": "serveo.net",
+        "chat_format": "%s: %s",
         "port": 25574
     },
     "keybinds": [

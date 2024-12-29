@@ -2,7 +2,7 @@
 ---@overload fun(...) : ChatInputBox
 local ChatInputBox, super = Class(Object)
 function ChatInputBox:init(x,y)
-    super.init(self, x, y, SCREEN_WIDTH, 16)
+    super.init(self, x, y, SCREEN_WIDTH, SCREEN_HEIGHT)
     self.is_open = false
     self.layer = 10000000 - 1
 
@@ -11,6 +11,8 @@ function ChatInputBox:init(x,y)
 
     self.font = Assets.getFont(self.font_name, self.font_size)
     self.input = {""}
+    ---@type {sender:string, content:string, timestamp: number?}[]
+    self.chat_history = {}
 end
 
 function ChatInputBox:onRemoveFromStage()
@@ -18,24 +20,35 @@ function ChatInputBox:onRemoveFromStage()
 end
 
 function ChatInputBox:draw()
+    local line_y = self.height-(self.font_size*#self.input)
     if self.is_open then
+        love.graphics.line(0,line_y, self.width,line_y)
         TextInput.draw({
             prefix_width = self.font:getWidth("> "),
             get_prefix = function(place)
-                if place == "start"  then return "┌ " end
-                if place == "middle" then return "├ " end
-                if place == "end"    then return "└ " end
-                if place == "single" then return "─ " end
-                return "  "
+                if place == "start"  then return " " end
+                if place == "middle" then return " " end
+                if place == "end"    then return " " end
+                if place == "single" then return " " end
+                return " "
             end,
             x = -4,
-            y = input_pos,
+            y = SCREEN_HEIGHT - (self.font_size*#self.input),
             print = function (text, x, y)
                 love.graphics.setFont(self.font)
                 love.graphics.print(text, x, y)
             end,
             font = self.font
         })
+    end
+    Draw.setColor()
+    local y = line_y - (self.font_size / 4)
+    for i=#self.chat_history, 1, -1 do
+        local item = self.chat_history[i]
+        love.graphics.setFont(self.font)
+        y = y - self.font_size
+        Draw.printShadow(string.format(GCSN.getConfig("chat_format"), item.sender, item.content), 12, y)
+        if not self.is_open then break end
     end
     super.draw(self)
 end

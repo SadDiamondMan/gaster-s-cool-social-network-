@@ -1,19 +1,20 @@
 ---@class Lib
 local Lib = {}
-local function getConfig(conf)
+function Lib.getConfig(conf)
     local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
-    if not ok then return (Kristal.Config["plugins/gcsn"] or {
+    if not ok then return (Kristal.Config["plugins/gcsn"][conf] or ({
         ["domain"] = "serveo.net",
+        ["chat_format"] = "%s: %s",
         ["port"] = 25574
-    })[conf] end
+    })[conf]) end
     return result
 end
 Game.socket = require("socket")
 
 Game.client = assert(
     Game.socket.connect(
-        getConfig("domain"),
-        getConfig("port")
+        Lib.getConfig("domain"),
+        Lib.getConfig("port")
     )
 )
 

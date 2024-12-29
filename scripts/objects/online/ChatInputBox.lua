@@ -11,11 +11,11 @@ function ChatInputBox:init(x,y)
 
     self.font = Assets.getFont(self.font_name, self.font_size)
     self.input = {""}
-    ---@type {sender:string, content:string, timestamp: number?}[]
+    ---@type {sender:string, content:string[], timestamp: number?}[]
     self.chat_history = {}
 end
 
----@param msg {sender:string, content:string, timestamp: number?}
+---@param msg {sender:string, content:string[], timestamp: number?}
 function ChatInputBox:push(msg)
     table.insert(self.chat_history, msg)
 end
@@ -51,8 +51,13 @@ function ChatInputBox:draw()
     for i=#self.chat_history, 1, -1 do
         local item = self.chat_history[i]
         love.graphics.setFont(self.font)
-        y = y - self.font_size
-        Draw.printShadow(string.format(GCSN.getConfig("chat_format"), item.sender, item.content), 12, y)
+        local prefix = string.format(GCSN.getConfig("chat_format"), item.sender)
+        for j=#item.content, 1, -1 do
+            y = y - self.font_size
+            local jtem = item.content[j]
+            local sender = (j == 1) and prefix or string.rep(" ", #prefix)
+            Draw.printShadow(sender .. jtem, 12, y)
+        end
         if not self.is_open then break end
     end
     super.draw(self)

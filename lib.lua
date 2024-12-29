@@ -4,7 +4,7 @@ function Lib.getConfig(conf)
     local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
     if not ok then return (Kristal.Config["plugins/gcsn"][conf] or ({
         ["domain"] = "serveo.net",
-        ["chat_format"] = "%s: %s",
+        ["chat_format"] = "%s: ",
         ["port"] = 25574
     })[conf]) end
     return result
@@ -379,7 +379,7 @@ function Lib:updateWorld(...)
             end
         elseif data.command == "chat" then
             local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
-            self.chat_box:push({sender = data.username, content = data.message})
+            self.chat_box:push({sender = data.username, content = Utils.split(data.message, "\n")})
             if sender == nil then return end
             local bubble = ChatBubble(sender.actor, data.message)
             bubble:setScale(0.25)

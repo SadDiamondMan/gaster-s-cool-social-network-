@@ -54,6 +54,7 @@ local lastHearbeatTime = love.timer.getTime()
 local lastUpdateTime = 0
 local lastPlayerListTime = 0
 function Lib:init()
+    ---@type ChatInputBox
     self.chat_box = ChatInputBox()
     self.partial = ""
     Utils.hook(World, 'update', function (orig, wld, ...)
@@ -377,7 +378,9 @@ function Lib:updateWorld(...)
                 end
             end
         elseif data.command == "chat" then
-            local sender = self.other_players[data.uuid] or Game.world.player
+            local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
+            self.chat_box:push({sender = data.username, content = data.message})
+            if sender == nil then return end
             local bubble = ChatBubble(sender.actor, data.message)
             bubble:setScale(0.25)
             sender:addChild(bubble)

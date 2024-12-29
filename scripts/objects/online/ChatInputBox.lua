@@ -15,6 +15,11 @@ function ChatInputBox:init(x,y)
     self.chat_history = {}
 end
 
+---@param msg {sender:string, content:string, timestamp: number?}
+function ChatInputBox:push(msg)
+    table.insert(self.chat_history, msg)
+end
+
 function ChatInputBox:onRemoveFromStage()
     TextInput.endInput()
 end

@@ -1,7 +1,6 @@
 return function(text)
     Game.client:send(JSON.encode({
-        command = "world",
-        subCommand = "chat",
+        command = "chat",
         uuid = GCSN.uuid,
         message = text
     }).."\n")

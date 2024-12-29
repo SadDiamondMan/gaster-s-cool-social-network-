@@ -19,6 +19,7 @@ local GCSNOptionsHandler, super = Class(StateClass)
 ---@class gcsnconfigoptions
 ---@field domain {[1]: string}
 ---@field port {[1]: string}
+---@field username {[1]: string}
 
 function GCSNOptionsHandler:init(menu)
     self.menu = menu
@@ -26,6 +27,7 @@ function GCSNOptionsHandler:init(menu)
         Kristal.Config["plugins/gcsn"] = {
             domain = "serveo.net",
             port = 25574,
+            username = "PLAYER",
         }
     end
     self.plugconfig = Kristal.Config["plugins/gcsn"]
@@ -34,6 +36,7 @@ function GCSNOptionsHandler:init(menu)
     self.options = {
         domain = {self.plugconfig.domain},
         port = {tostring(self.plugconfig.port)},
+        username = {self.plugconfig.username}
     }
     self.selected_option = 1
 
@@ -65,6 +68,7 @@ function GCSNOptionsHandler:onEnter(old_state)
     self.options = {
         domain = {self.plugconfig.domain},
         port = {tostring(self.plugconfig.port)},
+        username = {self.plugconfig.username or "PLAYER"}
     }
     self.selected_option = 1
 
@@ -92,11 +96,11 @@ function GCSNOptionsHandler:onKeyPressed(key, is_repeat)
         if Input.is("down" , key)                              then self.selected_option = self.selected_option + 1  end
         if Input.is("left" , key) and not Input.usingGamepad() then self.selected_option = self.selected_option - 1  end
         if Input.is("right", key) and not Input.usingGamepad() then self.selected_option = self.selected_option + 1  end
-        if self.selected_option > 3 then self.selected_option = is_repeat and 3 or 1    end
-        if self.selected_option < 1 then self.selected_option = is_repeat and 1 or 3    end
+        if self.selected_option > 4 then self.selected_option = is_repeat and 4 or 1    end
+        if self.selected_option < 1 then self.selected_option = is_repeat and 1 or 4    end
 
         local y_off = (self.selected_option - 1) * 32
-        if self.selected_option >= 3 then
+        if self.selected_option >= 4 then
             y_off = y_off + 32
         end
 
@@ -117,6 +121,10 @@ function GCSNOptionsHandler:onKeyPressed(key, is_repeat)
                 self:setState("PORT")
 
             elseif self.selected_option == 3 then
+                Assets.stopAndPlaySound("ui_select")
+                self:setState("USERNAME")
+
+            elseif self.selected_option == 4 then
                 Assets.stopAndPlaySound("ui_select")
                 self.menu:setState("plugins")
             end
@@ -149,7 +157,8 @@ function GCSNOptionsHandler:draw()
 
     self:drawInputLine("Domain: ",          menu_x, menu_y + (32 * 0), "domain")
     self:drawInputLine("Port:   ",          menu_x, menu_y + (32 * 1), "port")
-    Draw.printShadow(  "Done",          menu_x, menu_y + (32 * 3))
+    self:drawInputLine("Username:   ",      menu_x, menu_y + (32 * 2), "username")
+    Draw.printShadow(  "Done",          menu_x, menu_y + (32 * 4))
 
     local off = 256
 
@@ -177,6 +186,9 @@ function GCSNOptionsHandler:onStateChange(old_state, state)
     elseif state == "DOMAIN" then
         self.menu.heart_target_x = 45 + 167
         self:openInput("domain")
+    elseif state == "USERNAME" then
+        self.menu.heart_target_x = 45 + 167
+        self:openInput("username")
     elseif state == "PORT" then
         self.menu.heart_target_x = 45 + 167
         self:openInput("port", function(letter)
@@ -205,6 +217,8 @@ function GCSNOptionsHandler:onInputSubmit(id)
         self.plugconfig["port"] = tonumber(self.options.port[1])
     elseif id == "domain" then
         self.plugconfig["domain"] = self.options.domain[1]
+    elseif id == "username" then
+        self.plugconfig["username"] = self.options.username[1]
     end
 
     Input.clear("return")
@@ -250,8 +264,8 @@ function GCSNOptionsHandler:drawCheckbox(x, y, id)
     end
 end
 
-function GCSNOptionsHandler:drawInputLine(name, x, y, id)
-    Draw.printShadow(name, x, y)
+function GCSNOptionsHandler:drawInputLine(username, x, y, id)
+    Draw.printShadow(username, x, y)
     love.graphics.setLineWidth(2)
     local line_x  = x + 128 + 32 + 16
     local line_x2 = line_x + 416 - 32
@@ -263,6 +277,7 @@ function GCSNOptionsHandler:drawInputLine(name, x, y, id)
     Draw.setColor(1, 1, 1)
 
     if self.options[id] ~= TextInput.input then
+        print(id)
         Draw.printShadow(self.options[id][1], line_x, y)
     else
         self.input_pos_x = line_x

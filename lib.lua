@@ -185,7 +185,7 @@ function Lib:partyTable()
 end
 function Lib:postInit()
     Game.stage:addChild(self.chat_box)
-    self.name = Game.save_name
+    self.name = self.getConfig("username") or Game.save_name
     self.other_players = nil
     self.other_players = {}  -- Store other players
 

@@ -188,7 +188,10 @@ function GCSNOptionsHandler:onStateChange(old_state, state)
         self:openInput("domain")
     elseif state == "USERNAME" then
         self.menu.heart_target_x = 45 + 167
-        self:openInput("username")
+        self:openInput("username", function(letter)
+            if not letter:match("%w") then return end
+            return letter
+        end)
     elseif state == "PORT" then
         self.menu.heart_target_x = 45 + 167
         self:openInput("port", function(letter)

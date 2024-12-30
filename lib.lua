@@ -276,7 +276,7 @@ function Lib:updateBattle(batl, ...)
                                 other_battler.y = playerData.location[2]
                             end
                             if playerData.party_number then
-                                other_battler.party_number = PlayerData.party_number
+                                other_battler.party_number = playerData.party_number
                                 self:playerBattleLocation()
                             end
                         end

@@ -245,7 +245,7 @@ function Server:processClientMessage(client, data)
         if sender then
             print(sender.username, message.message)
         else
-            print("unknown", message.message)
+            return
         end
         for _, reciever in pairs(self.players) do
             self:sendClientMessage(reciever.client, {

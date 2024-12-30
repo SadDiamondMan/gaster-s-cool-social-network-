@@ -232,9 +232,7 @@ function Lib:updateBattle(batl, ...)
                         other_battler.name = playerData.username
 
                         if playerData.health then other_battler.health = playerData.health end
-
                         if other_battler.actor.id ~= playerData.actor then
-                            
                             local success, result = pcall(Other_Battler, playerData.actor, 0, 0, 0)
                             if success then
                                 other_battler:setActor(playerData.actor)
@@ -242,9 +240,18 @@ function Lib:updateBattle(batl, ...)
                                 other_battler:setActor("dummy")
                             end
                         end
-                        
                         if other_battler.sprite.sprite_options[1] ~= playerData.sprite then
                             other_battler:setSprite(playerData.sprite)
+                        end
+
+                        if playerData.location then
+                            other_battler.x = playerData.location[1]
+                            other_battler.y = playerData.location[2]
+                        end
+
+                        if playerData.party_number then
+                            other_battler.party_number = PlayerData.party_number
+                            self:playerBattleLocation()
                         end
 
                     else
@@ -263,11 +270,21 @@ function Lib:updateBattle(batl, ...)
                             other_battler.encounterID = playerData.encounter
                             Game.battle:addChild(other_battler)
                             self.other_battlers[playerData.uuid] = other_battler
+
+                            if playerData.location then
+                                other_battler.x = playerData.location[1]
+                                other_battler.y = playerData.location[2]
+                            end
+                            if playerData.party_number then
+                                other_battler.party_number = PlayerData.party_number
+                                self:playerBattleLocation()
+                            end
                         end
                     end
                 end
                 
             end
+        elseif data.command == "enemy_update" then
         elseif data.command == "heal" then
             if data.amount < 0 then
                 batl.party[1]:hurt(-data.amount)
@@ -279,11 +296,15 @@ function Lib:updateBattle(batl, ...)
                 if self.other_battlers[uuid] then
                     self.other_battlers[uuid].fadingOut = true
                     self.other_battlers[uuid] = nil
+                    self:playerBattleLocation()
                 end
             end
         elseif data.command == "chat" then
             local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
             self.chat_box:push({sender = data.username, content = Utils.split(data.message, "\n")})
+        elseif data.command == "set_party_number" then
+            batl.party[1].party_number = data.party_number
+            self:playerBattleLocation()
         end
     end
 
@@ -297,7 +318,8 @@ function Lib:updateBattle(batl, ...)
             username = self.name,
             sprite = player.sprite.sprite_options[1],
             encounter = batl.encounter.id,
-            health = {player.chara.health, player.chara.stats.health}
+            health = {player.chara.health, player.chara.stats.health},
+            location = {player.x, player.y}
         }
         sendToServer(client, updateMessage)
         lastUpdateTime = currentTime
@@ -442,6 +464,71 @@ function Lib:onKeyPressed(key, is_repeat)
     ) then
         self.chat_box:open()
     end
+end
+
+function Lib:getPartyPosition(index, party_size)
+    local x, y = 0, 0
+    local battler = Game.battle.party[1]
+
+    if party_size <= 3 then 
+        if party_size == 1 then
+            x = 80
+            y = 140
+        elseif party_size == 2 then
+            x = 80
+            y = 100 + (80 * (index - 1))
+        elseif party_size == 3 then
+            x = 80
+            y = 50 + (80 * (index - 1))
+        end
+    
+        local ox, oy = battler.chara:getBattleOffset()
+        x = x + (battler.actor:getWidth()/2 + ox) * 2
+        y = y + (battler.actor:getHeight()  + oy) * 2
+        return x, y
+    end
+    
+    local column = 0
+    local reset = 0
+    local middle = 0
+    local classic = (Kristal.getLibConfig("moreparty", "classic_mode") and 3 or 4)
+    if #Game.battle.party > classic then
+        if index <= classic then
+            column = 80
+        else
+            reset = classic
+            middle = (classic * 2 - party_size) * ((Kristal.getLibConfig("moreparty", "classic_mode") and 40 or 35))
+        end
+    end
+    x = 80 + column
+    y = (((not Kristal.getLibConfig("moreparty", "classic_mode") and party_size <= 4) and 120 or 50) / classic) + ((SCREEN_HEIGHT * 0.5) / classic) * (index - 1 - reset) + middle
+
+    local ox, oy = battler.chara:getBattleOffset()
+    x = x + (battler.actor:getWidth()/2 + ox) * 2
+    y = y + (battler.actor:getHeight()  + oy) * 2
+    return x, y
+end
+
+function Lib:playerBattleLocation()
+    local battle = Game.battle
+    local player = Game.battle.party[1]
+
+    local numbers = {}
+    table.insert(numbers, player.party_number)
+    for i, party in pairs(self.other_battlers) do
+        table.insert(numbers, party.party_number)
+    end
+    table.sort(numbers)
+
+    local index
+    for i, num in ipairs(numbers) do
+        if num == player.party_number then
+            index = i
+            break
+        end
+    end
+    player.x, player.y = self:getPartyPosition(index, #numbers)
+
 end
 
 return Lib

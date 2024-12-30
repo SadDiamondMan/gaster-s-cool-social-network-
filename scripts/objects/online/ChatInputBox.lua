@@ -29,7 +29,7 @@ function ChatInputBox:push(msg)
     -- table.insert(self.chat_history, msg)
     local text = string.format(GCSN.getConfig("chat_format"), msg.sender) .. msg.content
     ---@type boolean, Text
-    local ok, obj = pcall(Text, text, nil,nil,nil,nil, {
+    local ok, obj = pcall(Text, text, nil,nil,(SCREEN_WIDTH*2) - 40,nil, {
         font = "main_mono",
         -- font_size = self.font_size,
     })

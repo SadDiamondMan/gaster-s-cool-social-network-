@@ -13,11 +13,30 @@ function ChatInputBox:init(x,y)
     self.input = {""}
     ---@type {sender:string, content:string[], timestamp: number?}[]
     self.chat_history = {}
+    ---@type Component
+    self.ui = self:addChild(Component(FixedSizing(SCREEN_WIDTH-12, SCREEN_HEIGHT - self.font_size)))
+    self.ui.x = 12
+    self.ui:setLayout(VerticalLayout({align = "end"}))
+end
+
+function ChatInputBox:updateSizing()
+---@diagnostic disable-next-line: inject-field
+    self.ui.y_sizing.height = SCREEN_HEIGHT - (#self.input * self.font_size) - 10
 end
 
 ---@param msg {sender:string, content:string[], timestamp: number?}
 function ChatInputBox:push(msg)
-    table.insert(self.chat_history, msg)
+    -- table.insert(self.chat_history, msg)
+    local text = string.format(GCSN.getConfig("chat_format"), msg.sender) .. table.concat(msg.content,"\n")
+    ---@type boolean, Text
+    local ok, obj = pcall(Text, text, nil,nil,nil,nil, {
+        font = "main_mono",
+        font_size = self.font_size,
+    })
+    if not ok then return end
+    obj:resetState()
+    print(obj.font_size)
+    self.ui:addChild(obj)
 end
 
 function ChatInputBox:onRemoveFromStage()
@@ -87,6 +106,11 @@ end
 function ChatInputBox:onSubmit()
     Say(table.concat(self.input, "\n"))
     self:close()
+end
+
+function ChatInputBox:update()
+    super.update(self)
+    self:updateSizing()
 end
 
 return ChatInputBox

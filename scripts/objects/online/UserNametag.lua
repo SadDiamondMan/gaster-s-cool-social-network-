@@ -31,44 +31,25 @@ end
 function UserNametag:update()
     super.update(self)
     self.name = self.pc.name
-
-    if Input.pressed("1") then
-        self.connected = 1
-        self.pc.x = 300
-        self.pc.y = 260
-    end
-
-    if Input.pressed("2") then
-        self.connected = 2
-    end
-
-    if Input.pressed("3") then
-        self.connected = 3
-    end
-
-
-
 end
 
 function UserNametag:draw()
     love.graphics.setFont(self.font)
 
     love.graphics.scale(0.5, 0.5)
-Draw.setColor(0, 0, 0, 1)
-for x=-1, 1 do
-for y=-1, 1 do
-love.graphics.print(self.name, self.length *-self.length/2 + (x*2), -self.pc.actor.height/2 *2 + (y*2))
-end
-end
+    Draw.setColor(0, 0, 0, 1)
+    for x=-1, 1 do
+        for y=-1, 1 do
+        love.graphics.print(self.name, self.length *-self.length/2 + (x*2), -self.pc.actor.height/2 *2 + (y*2))
+    end
+    end
 
-    if self.connected == 1 then
-        Draw.setColor(0, 0, 1, 1)
-    elseif self.connected == 2 then
-        Draw.setColor(0, 1, 0, 1)
-    elseif self.connected == 3 then
+    if self.name == "Hyperboid" then
         Draw.setColor(1, 0, 0, 1)
-else
-Draw.setColor(1, 1, 1, 1)
+    elseif self.name == "SadDiamondMan" then
+            Draw.setColor(0, 0, 1, 1)
+    else
+        Draw.setColor(1, 1, 1, 1)
     end
 
     love.graphics.print(self.name, self.length *-self.length/2, -self.pc.actor.height/2 *2)

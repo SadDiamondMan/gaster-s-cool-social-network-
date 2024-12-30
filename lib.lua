@@ -301,7 +301,7 @@ function Lib:updateBattle(batl, ...)
             end
         elseif data.command == "chat" then
             local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
-            self.chat_box:push({sender = data.username, content = Utils.split(data.message, "\n")})
+            self.chat_box:push({sender = data.username, content = data.message})
         elseif data.command == "set_party_number" then
             batl.party[1].party_number = data.party_number
             self:playerBattleLocation()
@@ -404,7 +404,7 @@ function Lib:updateWorld(...)
             end
         elseif data.command == "chat" then
             local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
-            self.chat_box:push({sender = data.username, content = Utils.split(data.message, "\n")})
+            self.chat_box:push({sender = data.username, content = data.message})
             if sender == nil then return end
             local bubble = ChatBubble(sender.actor, data.message)
             bubble:setScale(0.25)

@@ -27,15 +27,16 @@ end
 ---@param msg {sender:string, content:string[], timestamp: number?}
 function ChatInputBox:push(msg)
     -- table.insert(self.chat_history, msg)
-    local text = string.format(GCSN.getConfig("chat_format"), msg.sender) .. table.concat(msg.content,"\n")
+    local text = string.format(GCSN.getConfig("chat_format"), msg.sender) .. msg.content
     ---@type boolean, Text
     local ok, obj = pcall(Text, text, nil,nil,nil,nil, {
         font = "main_mono",
-        font_size = self.font_size,
+        -- font_size = self.font_size,
     })
     if not ok then return end
+    obj:setScale(.5)
     obj:resetState()
-    obj:addFX(FadeoutFX(self))
+    obj:addFX(TextFadeoutFX(self))
     print(obj.font_size)
     self.ui:addChild(obj)
 end

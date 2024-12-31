@@ -286,7 +286,10 @@ function Lib:updateBattle(batl, ...)
             end
         elseif data.command == "enemy_update" then
             if data.subCommand == "defeat" then
-                Game.battle.enemies[data.index]:defeat(data.reason, data.violent)
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy:defeat(data.reason, data.violent)
+                end
             end
         elseif data.command == "heal" then
             if data.amount < 0 then

@@ -546,9 +546,9 @@ Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, ...)
     local msg = {
         command = "battle",
         subCommand = "enemy",
-        subSubC = "dmercy",
+        subSubC = "mercy",
         index = index,
-        mercy = amount 
+        amount = amount 
     }
     sendToServer(client, msg)
 

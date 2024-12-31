@@ -285,10 +285,10 @@ function Lib:updateBattle(batl, ...)
                 
             end
         elseif data.command == "enemy_update" then
-            if data.subCommand == "defeat" then
+            if data.subCommand == "mercy" then
                 local enemy = Game.battle.enemies[data.index]
                 if enemy then
-                    enemy:defeat(data.reason, data.violent)
+                    enemy:addMercy(data.amount)
                 end
             end
         elseif data.command == "heal" then
@@ -547,7 +547,7 @@ Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
         reason = pacify and "PACIFIED" or "SPARED",
         violent = false
     }
-    sendToServer(client, msg)
+    --sendToServer(client, msg)
 
     orig(enemy,...)
 end)

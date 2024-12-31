@@ -157,7 +157,7 @@ function Server:sendBattleUpdatesToClients()
 
     -- Send updates only to players on the same encounter, excluding the player's own UUID
     for id, player in pairs(self.players) do
-        if player.client and updates[player.encounter] then
+        if player.client and updates[player.encounter] and player.state == "battle" then
             -- Filter out the player's own UUID
             local filteredUpdates = {}
             for _, update in ipairs(updates[player.encounter]) do
@@ -278,7 +278,7 @@ function Server:processClientMessage(client, data)
                 if not player.party_number then
                     local bigger = 1
                     for id, players in pairs(self.players) do
-                        if players.encounter == player.encounter and player.state == "battle" then
+                        if players.encounter == player.encounter and players.state == "battle" then
                             if players.party_number and players.party_number >= bigger then
                                 bigger = players.party_number + 1
                             end
@@ -296,23 +296,100 @@ function Server:processClientMessage(client, data)
             end
         elseif subCommand == "enemy" then
             if subSubC == "hurt" then
-            elseif subSubC == "mercy" then
-            elseif subSubC == "defeat" then
                 local player = self:getPlayerFromClient(client)
 
                 if player then
                     for _, players in pairs(self.players) do
-                        if players.encounter == player.encounter and player.uuid ~= players.uuid and player.state == "battle" then
+                        if player.uuid == players.uuid then
+                        elseif players.encounter == player.encounter and players.state == "battle" then
                             self:sendClientMessage(players.client, {
                                 command = "enemy_update",
-                                subCommand = "defeat",
-                                index = message.enemy,
-                                reason = message.reason or "SPARED",
-                                violent = message.violent or false,
+                                subCommand = "hurt",
+                                index = message.index,
+                                amount = message.amount
                             })
                         end
                     end
                 end
+            elseif subSubC == "mercy" then
+                local player = self:getPlayerFromClient(client)
+
+                if player then
+                    for _, players in pairs(self.players) do
+                        if player.uuid == players.uuid then
+                        elseif players.encounter == player.encounter and players.state == "battle" then
+                            self:sendClientMessage(players.client, {
+                                command = "enemy_update",
+                                subCommand = "mercy",
+                                index = message.index,
+                                amount = message.amount
+                            })
+                        end
+                    end
+                end
+            elseif subSubC == "spare" then
+                local player = self:getPlayerFromClient(client)
+
+                if player then
+                    for _, players in pairs(self.players) do
+                        if player.uuid == players.uuid then
+                        elseif players.encounter == player.encounter and players.state == "battle" then
+                            self:sendClientMessage(players.client, {
+                                command = "enemy_update",
+                                subCommand = "spare",
+                                index = message.index,
+                                extra = message.extra
+                            })
+                        end
+                    end
+                end
+            elseif subSubC == "onDefeatRun" then
+                local player = self:getPlayerFromClient(client)
+
+                if player then
+                    for _, players in pairs(self.players) do
+                        if player.uuid == players.uuid then
+                        elseif players.encounter == player.encounter and players.state == "battle" then
+                            self:sendClientMessage(players.client, {
+                                command = "enemy_update",
+                                subCommand = "onDefeatRun",
+                                index = message.index,
+                                amount = message.amount
+                            })
+                        end
+                    end
+                end
+            elseif subSubC == "onDefeatFatal" then
+                local player = self:getPlayerFromClient(client)
+
+                if player then
+                    for _, players in pairs(self.players) do
+                        if player.uuid == players.uuid then
+                        elseif players.encounter == player.encounter and players.state == "battle" then
+                            self:sendClientMessage(players.client, {
+                                command = "enemy_update",
+                                subCommand = "onDefeatFatal",
+                                index = message.index,
+                                amount = message.amount
+                            })
+                        end
+                    end
+                end
+            elseif subSubC == "freeze" then
+                local player = self:getPlayerFromClient(client)
+                if player then
+                    for _, players in pairs(self.players) do
+                        if player.uuid == players.uuid then
+                        elseif players.encounter == player.encounter and players.state == "battle" then
+                            self:sendClientMessage(players.client, {
+                                command = "enemy_update",
+                                subCommand = "freeze",
+                                index = message.index
+                            })
+                        end
+                    end
+                end
+                
             end
         elseif subCommand == "heal" then
             local target = message.heal_who

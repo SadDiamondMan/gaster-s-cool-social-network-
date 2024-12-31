@@ -288,8 +288,18 @@ function Lib:updateBattle(batl, ...)
                 local enemy = Game.battle.enemies[data.index]
                 if enemy then
                     enemy:addMercy(data.amount, true)
-                else
-                    print("no enemys?")
+                end
+            elseif data.subCommand == "hurt" then
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy.message_hurt = true
+                    enemy:hurt(data.amount)
+                end
+            elseif data.subCommand == "spare" then
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy.message_spare = true
+                    enemy:spare(data.extra)
                 end
             end
         elseif data.command == "heal" then
@@ -540,12 +550,50 @@ function Lib:playerBattleLocation()
 
 end
 
+Utils.hook(EnemyBattler, "hurt", function (orig, enemy, amount, battler, on_defeat, color, show_status, attacked, ...)
+    if enemy.message_hurt then
+        enemy.message_hurt = false
+    else
+        local amount = amount
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        print(num_index)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "hurt",
+            index = num_index,
+            amount = amount 
+        }
+        sendToServer(client, msg)
+    end
+
+    orig(enemy, amount, battler, on_defeat, color, show_status, attacked, ...)
+end)
+
+Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
+    if enemy.message_spare == true then
+        enemy.message_spare = false
+    else
+        local amount = amount
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "spare",
+            index = num_index,
+            extra = pacify
+        }
+        sendToServer(client, msg)
+    end
+
+    orig(enemy, pacify, ...)
+end)
+
 Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, message, ...)
     if message == true then
     else
         local amount = amount
         local num_index = Utils.getIndex(Game.battle.enemies, enemy)
-        print(num_index)
         local msg = {
             command = "battle",
             subCommand = "enemy",

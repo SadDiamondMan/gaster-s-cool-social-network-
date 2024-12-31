@@ -98,6 +98,9 @@ function Server:sendUpdatesToClients()
     -- Collect updates per map
     for id, player in pairs(self.players) do
         if player.client and player.state == "world" then
+            if player.party_number then
+                player.party_number = nil
+            end
             updates[player.map] = updates[player.map] or {}
             table.insert(updates[player.map], {
                 uuid = id,
@@ -145,7 +148,9 @@ function Server:sendBattleUpdatesToClients()
                 actor = player.actor,
                 sprite = player.sprite,
                 health = player.health,
-                encounter = player.encounter
+                encounter = player.encounter, 
+                location = player.location,
+                party_number = player.party_number or 0
             })
         end
     end
@@ -176,6 +181,7 @@ function Server:processClientMessage(client, data)
     if not ok then return print(message) end
     local command = message.command
     local subCommand = message.subCommand
+    local subSubC = message.subSubC
 
     if command == "register" then
         local id = message.uuid or uuid()
@@ -206,6 +212,7 @@ function Server:processClientMessage(client, data)
                 player.sprite = message.sprite
                 player.lastUpdate = Socket.gettime()
                 player.state = "world"
+
             end
         elseif subCommand == "inMap" then
             local id = message.uuid
@@ -266,6 +273,46 @@ function Server:processClientMessage(client, data)
                 player.lastUpdate = Socket.gettime()
                 player.health = message.health
                 player.state = "battle"
+                player.location = message.location -- {x, y}
+
+                if not player.party_number then
+                    local bigger = 1
+                    for id, players in pairs(self.players) do
+                        if players.encounter == player.encounter and player.state == "battle" then
+                            if players.party_number and players.party_number >= bigger then
+                                bigger = players.party_number + 1
+                            end
+                        end
+                    end
+                    player.party_number = bigger
+
+                    local msg = {
+                        command = "set_party_number",
+                        party_number = bigger
+                    }
+                    self:sendClientMessage(player.client, msg)
+                end
+
+            end
+        elseif subCommand == "enemy" then
+            if subSubC == "hurt" then
+            elseif subSubC == "mercy" then
+            elseif subSubC == "defeat" then
+                local player = self:getPlayerFromClient(client)
+
+                if player then
+                    for _, players in pairs(self.players) do
+                        if players.encounter == player.encounter and player.uuid ~= players.uuid and player.state == "battle" then
+                            self:sendClientMessage(players.client, {
+                                command = "enemy_update",
+                                subCommand = "defeat",
+                                index = message.enemy,
+                                reason = message.reason or "SPARED",
+                                violent = message.violent or false,
+                            })
+                        end
+                    end
+                end
             end
         elseif subCommand == "heal" then
             local target = message.heal_who

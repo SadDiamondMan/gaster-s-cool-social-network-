@@ -171,6 +171,23 @@ function Lib:init()
         end
         orig(batl, key, ...)
     end)
+
+    Utils.hook(Battle, "checkGameOver", function (orig, batl, ...)
+        local keep_playing = false
+        for _,battler in ipairs(self:partyTable()) do
+            if battler.chara:getHealth() > 0 then
+                keep_playing = true
+            end
+        end
+    
+        if keep_playing == true then
+            print("moo")
+        else
+            orig(batl, ...)
+        end
+    end)
+
+
 end
 function Lib:partyTable()
     local full_party = {}
@@ -680,17 +697,6 @@ Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
     end
 
     orig(enemy, ...)
-end)
-
-
-Utils.hook(Battle, "checkGameOver", function (orig, batl, ...)
-    for _,battler in ipairs(self.other_battlers) do
-        if battler.health > 0 then
-            return
-        end
-    end
-
-    orig(batl, ...)
 end)
 
 return Lib

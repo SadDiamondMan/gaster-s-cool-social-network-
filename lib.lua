@@ -682,4 +682,15 @@ Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
     orig(enemy, ...)
 end)
 
+
+Utils.hook(Battle, "checkGameOver", function (orig, batl, ...)
+    for _,battler in ipairs(self.other_battlers) do
+        if battler.health > 0 then
+            return
+        end
+    end
+
+    orig(batl, ...)
+end)
+
 return Lib

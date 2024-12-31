@@ -251,7 +251,6 @@ function Lib:updateBattle(batl, ...)
 
                         if playerData.party_number then
                             other_battler.party_number = playerData.party_number
-                            self:playerBattleLocation()
                         end
 
                     else
@@ -289,6 +288,8 @@ function Lib:updateBattle(batl, ...)
                 local enemy = Game.battle.enemies[data.index]
                 if enemy then
                     enemy:addMercy(data.amount)
+                else
+                    print("no enemys?")
                 end
             end
         elseif data.command == "heal" then
@@ -516,6 +517,8 @@ function Lib:getPartyPosition(index, party_size)
 end
 
 function Lib:playerBattleLocation()
+    if not Game.battle then return end
+
     local battle = Game.battle
     local player = Game.battle.party[1]
 
@@ -537,19 +540,19 @@ function Lib:playerBattleLocation()
 
 end
 
-Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
+Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, ...)
+    local amount = amount
     local index = Utils.getIndex(Game.battle.enemies_index, self)
-    local msg= {
+    local msg = {
         command = "battle",
         subCommand = "enemy",
-        subSubC = "defeat",
-        enemy = index,
-        reason = pacify and "PACIFIED" or "SPARED",
-        violent = false
+        subSubC = "dmercy",
+        index = index,
+        mercy = amount 
     }
-    --sendToServer(client, msg)
+    sendToServer(client, msg)
 
-    orig(enemy,...)
+    orig(enemy, amount, ...)
 end)
 
 return Lib

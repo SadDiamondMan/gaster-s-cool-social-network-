@@ -47,7 +47,7 @@ function UserNametag:draw()
     if self.name == "Hyperboid" then
         Draw.setColor(1, 0, 0, 1)
     elseif self.name == "SadDiamondMan" then
-            Draw.setColor(0, 0, 1, 1)
+        Draw.setColor(0, 0, 1, 1)
     else
         Draw.setColor(1, 1, 1, 1)
     end

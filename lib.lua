@@ -285,6 +285,9 @@ function Lib:updateBattle(batl, ...)
                 
             end
         elseif data.command == "enemy_update" then
+            if data.subCommand == "defeat" then
+                Game.battle.enemies[data.index]:defeat(data.reason, data.violent)
+            end
         elseif data.command == "heal" then
             if data.amount < 0 then
                 batl.party[1]:hurt(-data.amount)
@@ -530,5 +533,20 @@ function Lib:playerBattleLocation()
     player.x, player.y = self:getPartyPosition(index, #numbers)
 
 end
+
+Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
+    local index = Utils.getIndex(Game.battle.enemies_index, self)
+    local msg= {
+        command = "battle",
+        subCommand = "enemy",
+        subSubC = "defeat",
+        enemy = index,
+        reason = pacify and "PACIFIED" or "SPARED",
+        violent = false
+    }
+    sendToServer(client, msg)
+
+    orig(enemy,...)
+end)
 
 return Lib

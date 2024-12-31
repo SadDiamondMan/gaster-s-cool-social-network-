@@ -627,8 +627,8 @@ Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, message, ...
 end)
 
 Utils.hook(EnemyBattler, "onDefeatRun", function (orig, enemy, damage, battler, ...)
-    if self.message_onDefeatRun == true then
-        self.message_onDefeatRun = false
+    if enemy.message_onDefeatRun == true then
+        enemy.message_onDefeatRun = false
     else
         local amount = damage
         local num_index = Utils.getIndex(Game.battle.enemies, enemy)
@@ -646,8 +646,8 @@ Utils.hook(EnemyBattler, "onDefeatRun", function (orig, enemy, damage, battler, 
 end)
 
 Utils.hook(EnemyBattler, "onDefeatFatal", function (orig, enemy, damage, battler, ...)
-    if self.message_onDefeatFatal == true then
-        self.message_onDefeatFatal = false
+    if enemy.message_onDefeatFatal == true then
+        enemy.message_onDefeatFatal = false
     else
         local amount = damage
         local num_index = Utils.getIndex(Game.battle.enemies, enemy)
@@ -665,8 +665,8 @@ Utils.hook(EnemyBattler, "onDefeatFatal", function (orig, enemy, damage, battler
 end)
 
 Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
-    if self.message_freeze == true then
-        self.message_freeze = false
+    if enemy.message_freeze == true then
+        enemy.message_freeze = false
     else
         local amount = damage
         local num_index = Utils.getIndex(Game.battle.enemies, enemy)

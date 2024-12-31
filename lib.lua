@@ -171,6 +171,23 @@ function Lib:init()
         end
         orig(batl, key, ...)
     end)
+
+    Utils.hook(Battle, "checkGameOver", function (orig, batl, ...)
+        local keep_playing = false
+        for _,battler in ipairs(self:partyTable()) do
+            if battler.chara:getHealth() > 0 then
+                keep_playing = true
+            end
+        end
+    
+        if keep_playing == true then
+            print("moo")
+        else
+            orig(batl, ...)
+        end
+    end)
+
+
 end
 function Lib:partyTable()
     local full_party = {}
@@ -251,7 +268,6 @@ function Lib:updateBattle(batl, ...)
 
                         if playerData.party_number then
                             other_battler.party_number = playerData.party_number
-                            self:playerBattleLocation()
                         end
 
                     else
@@ -285,10 +301,41 @@ function Lib:updateBattle(batl, ...)
                 
             end
         elseif data.command == "enemy_update" then
-            if data.subCommand == "defeat" then
+            if data.subCommand == "mercy" then
                 local enemy = Game.battle.enemies[data.index]
                 if enemy then
-                    enemy:defeat(data.reason, data.violent)
+                    enemy:addMercy(data.amount, true)
+                end
+            elseif data.subCommand == "hurt" then
+                print(data.amount)
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy.message_hurt = true
+                    enemy:hurt(data.amount)
+                end
+            elseif data.subCommand == "spare" then
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy.message_spare = true
+                    enemy:spare(data.extra)
+                end
+            elseif data.subCommand == "onDefeatRun" then
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy.message_onDefeatRun = true
+                    enemy:onDefeatRun(data.amount)
+                end
+            elseif data.subCommand == "onDefeatFatal" then
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy.message_onDefeatFatal = true
+                    enemy:onDefeatFatal(data.amount)
+                end
+            elseif data.subCommand == "freeze" then
+                local enemy = Game.battle.enemies[data.index]
+                if enemy then
+                    enemy.message_freeze = true
+                    enemy:freeze()
                 end
             end
         elseif data.command == "heal" then
@@ -516,6 +563,8 @@ function Lib:getPartyPosition(index, party_size)
 end
 
 function Lib:playerBattleLocation()
+    if not Game.battle then return end
+
     local battle = Game.battle
     local player = Game.battle.party[1]
 
@@ -537,19 +586,117 @@ function Lib:playerBattleLocation()
 
 end
 
-Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
-    local index = Utils.getIndex(Game.battle.enemies_index, self)
-    local msg= {
-        command = "battle",
-        subCommand = "enemy",
-        subSubC = "defeat",
-        enemy = index,
-        reason = pacify and "PACIFIED" or "SPARED",
-        violent = false
-    }
-    sendToServer(client, msg)
+Utils.hook(EnemyBattler, "hurt", function (orig, enemy, amount, battler, on_defeat, color, show_status, attacked, ...)
+    if enemy.message_hurt then
+        enemy.message_hurt = false
+    else
+        local amount = amount
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        print(num_index)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "hurt",
+            index = num_index,
+            amount = amount 
+        }
+        sendToServer(client, msg)
+    end
 
-    orig(enemy,...)
+    orig(enemy, amount, battler, on_defeat, color, show_status, attacked, ...)
+end)
+
+Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
+    if enemy.message_spare == true then
+        enemy.message_spare = false
+    else
+        local amount = amount
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "spare",
+            index = num_index,
+            extra = pacify
+        }
+        sendToServer(client, msg)
+    end
+
+    orig(enemy, pacify, ...)
+end)
+
+Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, message, ...)
+    if message == true then
+    else
+        local amount = amount
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "mercy",
+            index = num_index,
+            amount = amount 
+        }
+        sendToServer(client, msg)
+    end
+
+    orig(enemy, amount, ...)
+end)
+
+Utils.hook(EnemyBattler, "onDefeatRun", function (orig, enemy, damage, battler, ...)
+    if enemy.message_onDefeatRun == true then
+        enemy.message_onDefeatRun = false
+    else
+        local amount = damage
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "onDefeatRun",
+            index = num_index,
+            amount = amount 
+        }
+        sendToServer(client, msg)
+    end
+
+    orig(enemy, damage, battler, ...)
+end)
+
+Utils.hook(EnemyBattler, "onDefeatFatal", function (orig, enemy, damage, battler, ...)
+    if enemy.message_onDefeatFatal == true then
+        enemy.message_onDefeatFatal = false
+    else
+        local amount = damage
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "onDefeatFatal",
+            index = num_index,
+            amount = amount 
+        }
+        sendToServer(client, msg)
+    end
+
+    orig(enemy, damage, battler, ...)
+end)
+
+Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
+    if enemy.message_freeze == true then
+        enemy.message_freeze = false
+    else
+        local amount = damage
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "freeze",
+            index = num_index 
+        }
+        sendToServer(client, msg)
+    end
+
+    orig(enemy, ...)
 end)
 
 return Lib

@@ -542,12 +542,13 @@ end
 
 Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, ...)
     local amount = amount
-    local index = Utils.getIndex(Game.battle.enemies_index, self)
+    local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+    print(num_index)
     local msg = {
         command = "battle",
         subCommand = "enemy",
         subSubC = "mercy",
-        index = index,
+        index = num_index,
         amount = amount 
     }
     sendToServer(client, msg)

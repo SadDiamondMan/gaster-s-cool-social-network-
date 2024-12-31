@@ -287,7 +287,7 @@ function Lib:updateBattle(batl, ...)
             if data.subCommand == "mercy" then
                 local enemy = Game.battle.enemies[data.index]
                 if enemy then
-                    enemy:addMercy(data.amount)
+                    enemy:addMercy(data.amount, true)
                 else
                     print("no enemys?")
                 end
@@ -540,18 +540,21 @@ function Lib:playerBattleLocation()
 
 end
 
-Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, ...)
-    local amount = amount
-    local num_index = Utils.getIndex(Game.battle.enemies, enemy)
-    print(num_index)
-    local msg = {
-        command = "battle",
-        subCommand = "enemy",
-        subSubC = "mercy",
-        index = num_index,
-        amount = amount 
-    }
-    sendToServer(client, msg)
+Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, message, ...)
+    if message == true then
+    else
+        local amount = amount
+        local num_index = Utils.getIndex(Game.battle.enemies, enemy)
+        print(num_index)
+        local msg = {
+            command = "battle",
+            subCommand = "enemy",
+            subSubC = "mercy",
+            index = num_index,
+            amount = amount 
+        }
+        sendToServer(client, msg)
+    end
 
     orig(enemy, amount, ...)
 end)

@@ -49,3 +49,7 @@ function love.draw()
         end
     end
 end
+
+function love.quit()
+    server:shutdown("Server closed")
+end

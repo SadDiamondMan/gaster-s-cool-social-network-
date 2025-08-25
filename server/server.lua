@@ -45,7 +45,7 @@ function Server:shutdown(message)
         client:disconnect()
         self:removePlayer(client)
     end
-    self.host:disconnect()
+    self.host:flush()
 end
 
 local self = Server

@@ -3,7 +3,6 @@ local Server = {}
 local TIMEOUT_THRESHOLD = 20
 
 function Server:start()
-    -- self.server = assert(Socket.bind("localhost", 25574))
     local hoststr = "localhost:25574"
     self.host = enet.host_create(hoststr)
     print("Server started on " .. hoststr)
@@ -456,7 +455,6 @@ function Server:tick()
     local event = self.host:service(100)
     while event do
         if event.type == "receive" then
-            print("Got message: ", event.data, event.peer)
             self:processClientMessage(event.peer, event.data)
         elseif event.type == "connect" then
             print(event.peer, "connected.")

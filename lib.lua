@@ -13,7 +13,7 @@ end
 local enet = require("enet")
 
 local host = enet.host_create()
-local server = assert(host:connect("localhost:6789"))
+local server = assert(host:connect(("%s:%d"):format(Lib.getConfig("domain"), Lib.getConfig("port"))))
 
 Game.socket = require("socket")
 
@@ -194,13 +194,12 @@ function Lib:postInit()
     self.other_battlers = nil
     self.other_battlers = {}  -- Store other players
     -- Register player with username and actor
-    local registerMessage = {
+    self.register_message = {
         command = "register",
         uuid = Game:getFlag("GCSN_UUID"), -- server will generate this if it's nil
         username = self.name,
         actor = Game.party[1].actor.id or "kris"  -- Include actor
     }
-    sendToServer(registerMessage)
 end
 
 function Lib:update()
@@ -217,9 +216,8 @@ function Lib:update()
     while event do
         if event.type == "connect" then
             print("Connected to", event.peer)
-            event.peer:send("hello world")
+            sendToServer(self.register_message)
         elseif event.type == "receive" then
-            print("Got message: ", event.data, event.peer)
             done = true
         end
         event = host:service()

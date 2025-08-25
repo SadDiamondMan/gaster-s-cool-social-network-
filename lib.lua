@@ -181,7 +181,6 @@ function Lib:init()
         end
     
         if keep_playing == true then
-            print("moo")
         else
             orig(batl, ...)
         end

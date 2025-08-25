@@ -254,6 +254,10 @@ function Server:processClientMessage(client, data)
         else
             return
         end
+        if string.sub(message.message, 1, 1) == "/" then
+            print("command received")
+            return
+        end 
         for _, reciever in pairs(self.players) do
             self:sendClientMessage(reciever.client, {
                 command = "chat",

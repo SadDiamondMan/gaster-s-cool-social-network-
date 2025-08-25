@@ -26,7 +26,7 @@ end
 
 ---@param msg {sender:string, content:string[], timestamp: number?}
 function ChatInputBox:push(msg)
-    -- table.insert(self.chat_history, msg)
+    --table.insert(self.chat_history, msg)
     local text = string.format(GCSN.getConfig("chat_format"), msg.sender) .. msg.content
     ---@type boolean, Text
     local ok, obj = pcall(Text, text, nil,nil,(SCREEN_WIDTH*2) - 40,nil, {
@@ -39,6 +39,13 @@ function ChatInputBox:push(msg)
     obj:addFX(TextFadeoutFX(self))
     print(obj.font_size)
     self.ui:addChild(obj)
+
+    table.insert(self.chat_history, 1, obj)
+
+    if #self.chat_history > 8 then -- make this a setting since most people wouldnt lag as much as me
+        self.chat_history[9]:remove()
+        self.chat_history[9] = nil
+    end
 end
 
 function ChatInputBox:onRemoveFromStage()
@@ -69,7 +76,7 @@ function ChatInputBox:draw()
     end
     Draw.setColor()
     local y = line_y - (self.font_size / 4)
-    for i=#self.chat_history, 1, -1 do
+    --[[for i=#self.chat_history, 1, -1 do
         local item = self.chat_history[i]
         love.graphics.setFont(self.font)
         local prefix = string.format(GCSN.getConfig("chat_format"), item.sender)
@@ -80,7 +87,7 @@ function ChatInputBox:draw()
             Draw.printShadow(sender .. jtem, 12, y)
         end
         if not self.is_open then break end
-    end
+    end]]
     super.draw(self)
 end
 

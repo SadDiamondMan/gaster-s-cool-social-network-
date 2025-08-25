@@ -34,7 +34,7 @@ function Other_Battler:heal(heal_amount)
         heal_who = self.uuid,
         amount = heal_amount
     }
-    Game:sendToServer(Game.client, updateMessage)
+    Game:sendToServer(updateMessage)
 end
 
 function Other_Battler:hurt(heal_amount)
@@ -45,7 +45,7 @@ function Other_Battler:hurt(heal_amount)
         heal_who = self.uuid,
         amount = -heal_amount
     }
-    Game:sendToServer(Game.client, updateMessage)
+    Game:sendToServer(updateMessage)
 end
 
 function Other_Battler:getStat(stat)

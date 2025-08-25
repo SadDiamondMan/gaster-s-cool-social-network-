@@ -3,15 +3,14 @@ local Server = {}
 local TIMEOUT_THRESHOLD = 20
 
 function Server:start()
-    self.server = assert(Socket.bind("localhost", 25574))
-    self.ip, self.port = self.server:getsockname()
-    self.server:settimeout(0)
-    print("Server started on " .. self.ip .. ":" .. self.port)
-    
+    -- self.server = assert(Socket.bind("localhost", 25574))
+    local hoststr = "localhost:25574"
+    self.host = enet.host_create(hoststr)
+    print("Server started on " .. hoststr)
     self.clients = {}
     self.players = {}
     self.updateInterval = 0.1
-    self.lastUpdateTime = Socket.gettime()
+    self.lastUpdateTime = love.timer.getTime()
 end
 
 ---Gets a player by their client
@@ -44,10 +43,10 @@ function Server:shutdown(message)
             command = "disconnect",
             message = message
         })
-        client:close()
+        client:disconnect()
         self:removePlayer(client)
     end
-    self.server:close()
+    self.host:disconnect()
 end
 
 local self = Server
@@ -84,7 +83,7 @@ end
 
 -- Check for inactive players
 function Server:checkForInactivePlayers()
-    local currentTime = Socket.gettime()
+    local currentTime = love.timer.getTime()
     for id, player in pairs(self.players) do
         if currentTime - player.lastUpdate >= TIMEOUT_THRESHOLD then
             self:removePlayer(player.client)
@@ -192,7 +191,7 @@ function Server:processClientMessage(client, data)
             map = message.map or "default", 
             uuid = id,
             client = client,
-            lastUpdate = Socket.gettime()
+            lastUpdate = love.timer.getTime()
         }
         print("Player " .. message.username .. "(uuid=" .. id .. ") registered with actor: " .. self.players[id].actor)
         self:sendClientMessage(client, {
@@ -210,7 +209,7 @@ function Server:processClientMessage(client, data)
                 player.map = message.map or player.map
                 player.actor = message.actor
                 player.sprite = message.sprite
-                player.lastUpdate = Socket.gettime()
+                player.lastUpdate = love.timer.getTime()
                 player.state = "world"
 
             end
@@ -274,7 +273,7 @@ function Server:processClientMessage(client, data)
                 player.encounter = message.encounter or player.encounter
                 player.actor = message.actor
                 player.sprite = message.sprite
-                player.lastUpdate = Socket.gettime()
+                player.lastUpdate = love.timer.getTime()
                 player.health = message.health
                 player.state = "battle"
                 player.location = message.location -- {x, y}
@@ -444,7 +443,7 @@ function Server:processClientMessage(client, data)
     elseif command == "heartbeat" then
         local player = self:getPlayerFromClient(client)
         if player then
-            player.lastUpdate = Socket.gettime()
+            player.lastUpdate = love.timer.getTime()
         end
     else
         print("Unhandled command:".. command)
@@ -454,25 +453,22 @@ end
 
 -- Main server loop
 function Server:tick()
-    local client = self.server:accept()
-    if client then
-        client:settimeout(0)
-        table.insert(self.clients, client)
-        print("New client connected")
-    end
-
-    local readable, _, _ = Socket.select(self.clients, nil, 0)
-    for _, client in ipairs(readable) do
-        local data, err = client:receive()
-        if data then
-            self:processClientMessage(client, data)
-        elseif err == "closed" then
-            self:removePlayer(client)
-            print("Client disconnected")
+    local event = self.host:service(100)
+    while event do
+        if event.type == "receive" then
+            print("Got message: ", event.data, event.peer)
+            self:processClientMessage(event.peer, event.data)
+        elseif event.type == "connect" then
+            print(event.peer, "connected.")
+            table.insert(self.clients, event.peer)
+        elseif event.type == "disconnect" then
+            print(event.peer, "disconnected.")
+            self:removePlayer(event.peer)
         end
+        event = self.host:service()
     end
 
-    local currentTime = Socket.gettime()
+    local currentTime = love.timer.getTime()
     if (currentTime - self.lastUpdateTime) >= self.updateInterval then
         self:sendUpdatesToClients()
         self:sendBattleUpdatesToClients()

@@ -9,43 +9,30 @@ function Lib.getConfig(conf)
     })[conf]) end
     return result
 end
+
+local enet = require("enet")
+
+local host = enet.host_create()
+local server = assert(host:connect("localhost:6789"))
+
 Game.socket = require("socket")
 
-Game.client = assert(
-    Game.socket.connect(
-        Lib.getConfig("domain"),
-        Lib.getConfig("port")
-    )
-)
+Game.client = host
 
 local socket = Game.socket
 local json = JSON
 
-local function sendToServer(client, message)
+local function sendToServer(message)
     local encodedMessage = json.encode(message)
     -- print("[OUT] "..Utils.dump(encodedMessage))
-    client:send(encodedMessage .. "\n")
+    server:send(encodedMessage .. "\n")
 end
 
-function Game:sendToServer(client, message) --do not say a word
-    sendToServer(client, message)
-end
-
-function Lib:receiveFromServer(client)
-    local response, err, partial = client:receive()
-    if partial then
-        self.partial = self.partial .. partial
-    elseif response then
-        local decodedResponse = json.decode(self.partial .. response)
-        self.partial = ""
-        return decodedResponse
-    elseif err ~= "timeout" then
-        print("Error: ", err)
-    end
+function Game:sendToServer(message) --do not say a word
+    sendToServer(message)
 end
 
 local client = Game.client
-client:settimeout(0)
 
 -- Throttle interval (in seconds)
 local THROTTLE_INTERVAL = 0.05
@@ -202,7 +189,6 @@ end
 function Lib:postInit()
     Game.stage:addChild(self.chat_box)
     self.name = self.getConfig("username") or Game.save_name
-    self.other_players = nil
     self.other_players = {}  -- Store other players
 
     self.other_battlers = nil
@@ -214,27 +200,39 @@ function Lib:postInit()
         username = self.name,
         actor = Game.party[1].actor.id or "kris"  -- Include actor
     }
-    sendToServer(client, registerMessage)
+    sendToServer(registerMessage)
 end
 
 function Lib:update()
     local currentTime = love.timer.getTime()
     if currentTime - lastHearbeatTime >= HEARTBEAT_INTERVAL then
         lastHearbeatTime = currentTime
-        sendToServer(client, {
+        sendToServer({
             command = "heartbeat",
             gamestate = Game.state
         })
     end
+
+    local event = host:service(1)
+    while event do
+        if event.type == "connect" then
+            print("Connected to", event.peer)
+            event.peer:send("hello world")
+        elseif event.type == "receive" then
+            print("Got message: ", event.data, event.peer)
+            done = true
+        end
+        event = host:service()
+    end
 end
 
 function Lib:unload()
-    sendToServer(client, {command = "disconnect"})
-    client:close()
+    sendToServer({command = "disconnect"})
+    server:disconnect()
 end
 
 function Lib:updateBattle(batl, ...)
-
+    do return end
     local currentTime = love.timer.getTime()
 
     local data = self:receiveFromServer(client)
@@ -373,7 +371,7 @@ function Lib:updateBattle(batl, ...)
             health = {player.chara.health, player.chara.stats.health},
             location = {player.x, player.y}
         }
-        sendToServer(client, updateMessage)
+        sendToServer(updateMessage)
         lastUpdateTime = currentTime
     end
 
@@ -390,7 +388,7 @@ function Lib:updateBattle(batl, ...)
             username = self.name,
             players = playersList
         }
-        sendToServer(client, currentPlayersMessage)
+        sendToServer(currentPlayersMessage)
         lastPlayerListTime = currentTime
     end
 
@@ -400,79 +398,6 @@ function Lib:updateWorld(...)
     local player = Game.world.player
     -- Update the current time
     local currentTime = love.timer.getTime()
-
-    -- Receive data from the server (if any)
-    local data = self:receiveFromServer(client)
-    if data then
-        -- print("[NET] "..Utils.dump(data))
-        if data.command == "register" then
-            self.uuid = data.uuid
-            Game:setFlag("GCSN_UUID", self.uuid)
-        elseif data.command == "update" then
-            for _, playerData in ipairs(data.players) do
-                if playerData.uuid ~= self.uuid then
-                    local other_player = self.other_players[playerData.uuid]
-
-                    if other_player then
-                        -- Smoothly interpolate position update
-                        other_player.targetX = playerData.x
-                        other_player.targetY = playerData.y
-                        other_player.name = playerData.username
-
-                        if other_player.actor.id ~= playerData.actor then
-                            
-                            local success, result = pcall(Other_Player, playerData.actor, 0, 0, 0)
-                            if success then
-                                other_player:setActor(playerData.actor)
-                            else
-                                other_player:setActor("dummy")
-                            end
-                        end
-                        
-                        if other_player.sprite.sprite_options[1] ~= playerData.sprite then
-                            other_player:setSprite(playerData.sprite)
-                        end
-
-
-                    else
-                        local otherplr
-                        local success, result = pcall(Other_Player, playerData.actor, playerData.x, playerData.y, playerData.username, playerData.uuid)
-                        if success then
-                            otherplr = result
-                        else
-                            otherplr = Other_Player("dummy", playerData.x, playerData.y, playerData.username, playerData.uuid)
-                        end
-
-                        if playerData.map == (Mod.info.id..":"..Game.world.map.id) then
-                            -- Create a new player if it doesn't exist while making sure It's on the right map
-                            other_player = otherplr
-                            other_player.layer = Game.world.map.object_layer
-                            other_player.mapID = playerData.map
-                            Game.world:addChild(other_player)
-                            self.other_players[playerData.uuid] = other_player
-                        end
-                    end
-                end
-            end
-        elseif data.command == "chat" then
-            local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
-            self.chat_box:push({sender = data.username, content = data.message})
-            if sender == nil then return end
-            local bubble = ChatBubble(sender.actor, data.message)
-            bubble:setScale(0.25)
-            sender:addChild(bubble)
-        elseif data.command == "RemoveOtherPlayersFromMap" then
-            for _, uuid in ipairs(data.players) do
-                if self.other_players[uuid] then
-                    self.other_players[uuid].fadingOut = true
-                    self.other_players[uuid] = nil
-                end
-            end
-        else
-            Kristal.Console:warn("Unhandled command: " .. (data.command or "<nil>"))
-            Kristal.Console:log(Utils.dump(data))
-        end
-    end
 
     -- Throttle player position update packets
     if currentTime - lastUpdateTime >= THROTTLE_INTERVAL then
@@ -486,7 +411,7 @@ function Lib:updateWorld(...)
             actor = player.actor.id,
             sprite = player.sprite.sprite_options[1]
         }
-        sendToServer(client, updateMessage)
+        sendToServer(updateMessage)
         lastUpdateTime = currentTime
     end
 
@@ -503,7 +428,7 @@ function Lib:updateWorld(...)
             username = self.name,
             players = playersList
         }
-        sendToServer(client, currentPlayersMessage)
+        sendToServer(currentPlayersMessage)
         lastPlayerListTime = currentTime
     end
 end
@@ -599,7 +524,7 @@ Utils.hook(EnemyBattler, "hurt", function (orig, enemy, amount, battler, on_defe
             index = num_index,
             amount = amount 
         }
-        sendToServer(client, msg)
+        sendToServer(msg)
     end
 
     orig(enemy, amount, battler, on_defeat, color, show_status, attacked, ...)
@@ -609,7 +534,6 @@ Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
     if enemy.message_spare == true then
         enemy.message_spare = false
     else
-        local amount = amount
         local num_index = Utils.getIndex(Game.battle.enemies, enemy)
         local msg = {
             command = "battle",
@@ -618,7 +542,7 @@ Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
             index = num_index,
             extra = pacify
         }
-        sendToServer(client, msg)
+        sendToServer(msg)
     end
 
     orig(enemy, pacify, ...)
@@ -636,7 +560,7 @@ Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, message, ...
             index = num_index,
             amount = amount 
         }
-        sendToServer(client, msg)
+        sendToServer(msg)
     end
 
     orig(enemy, amount, ...)
@@ -655,7 +579,7 @@ Utils.hook(EnemyBattler, "onDefeatRun", function (orig, enemy, damage, battler, 
             index = num_index,
             amount = amount 
         }
-        sendToServer(client, msg)
+        sendToServer(msg)
     end
 
     orig(enemy, damage, battler, ...)
@@ -674,7 +598,7 @@ Utils.hook(EnemyBattler, "onDefeatFatal", function (orig, enemy, damage, battler
             index = num_index,
             amount = amount 
         }
-        sendToServer(client, msg)
+        sendToServer(msg)
     end
 
     orig(enemy, damage, battler, ...)
@@ -684,7 +608,6 @@ Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
     if enemy.message_freeze == true then
         enemy.message_freeze = false
     else
-        local amount = damage
         local num_index = Utils.getIndex(Game.battle.enemies, enemy)
         local msg = {
             command = "battle",
@@ -692,10 +615,98 @@ Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
             subSubC = "freeze",
             index = num_index 
         }
-        sendToServer(client, msg)
+        sendToServer(msg)
     end
 
     orig(enemy, ...)
 end)
+
+function Lib:parseServerData(data)
+    if data then
+        -- print("[NET] "..Utils.dump(data))
+        if data.command == "register" then
+            self.uuid = data.uuid
+            Game:setFlag("GCSN_UUID", self.uuid)
+        elseif data.command == "update" then
+            for _, playerData in ipairs(data.players) do
+                if playerData.uuid ~= self.uuid then
+                    local other_player = self.other_players[playerData.uuid]
+
+                    if other_player then
+                        -- Smoothly interpolate position update
+                        other_player.targetX = playerData.x
+                        other_player.targetY = playerData.y
+                        other_player.name = playerData.username
+
+                        if other_player.actor.id ~= playerData.actor then
+                            
+                            local success, result = pcall(Other_Player, playerData.actor, 0, 0, 0)
+                            if success then
+                                other_player:setActor(playerData.actor)
+                            else
+                                other_player:setActor("dummy")
+                            end
+                        end
+                        
+                        if other_player.sprite.sprite_options[1] ~= playerData.sprite then
+                            other_player:setSprite(playerData.sprite)
+                        end
+
+
+                    else
+                        local otherplr
+                        local success, result = pcall(Other_Player, playerData.actor, playerData.x, playerData.y, playerData.username, playerData.uuid)
+                        if success then
+                            otherplr = result
+                        else
+                            otherplr = Other_Player("dummy", playerData.x, playerData.y, playerData.username, playerData.uuid)
+                        end
+
+                        if playerData.map == (Mod.info.id..":"..Game.world.map.id) then
+                            -- Create a new player if it doesn't exist while making sure It's on the right map
+                            other_player = otherplr
+                            other_player.layer = Game.world.map.object_layer
+                            other_player.mapID = playerData.map
+                            Game.world:addChild(other_player)
+                            self.other_players[playerData.uuid] = other_player
+                        end
+                    end
+                end
+            end
+        elseif data.command == "chat" then
+            local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
+            self.chat_box:push({sender = data.username, content = data.message})
+            if sender == nil then return end
+            local bubble = ChatBubble(sender.actor, data.message)
+            bubble:setScale(0.25)
+            sender:addChild(bubble)
+        elseif data.command == "RemoveOtherPlayersFromMap" then
+            for _, uuid in ipairs(data.players) do
+                if self.other_players[uuid] then
+                    self.other_players[uuid].fadingOut = true
+                    self.other_players[uuid] = nil
+                end
+            end
+        else
+            Kristal.Console:warn("Unhandled command: " .. (data.command or "<nil>"))
+            Kristal.Console:log(Utils.dump(data))
+        end
+    end
+end
+
+local function getConnectionSprite()
+    if server:state() == "disconnected" then
+        return "none"
+    elseif server:state() == "connecting" then
+        return "connecting"
+    else
+        return "ok"
+    end
+end
+
+function Lib:postDraw()
+    local texture = Assets.getTexture("ui/gcsn/connectionoverlay/"..(Game:isLight() and "dark/" or "light/")..getConnectionSprite())
+    Draw.draw(texture, 0, SCREEN_HEIGHT, 0, 2, 2, 0, texture:getHeight())
+end
 
 return Lib

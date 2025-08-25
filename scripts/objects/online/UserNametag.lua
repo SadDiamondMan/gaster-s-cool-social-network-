@@ -1,5 +1,5 @@
----@class Nametag : Object
----@overload fun(...) : Nametag
+---@class UserNametag : Object
+---@overload fun(...) : UserNametag
 local UserNametag, super = Class(Object)
 
 function UserNametag:init(pc, name)

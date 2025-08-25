@@ -1,4 +1,5 @@
 Socket = require("socket")
+enet = require("enet")
 JSON = require("json")
 NBT = require("shared.nbt")
 ---@type Server
@@ -13,7 +14,7 @@ function love.update(dt)
     if not success then
         print(value)
         server:shutdown(value)
-        Socket.sleep(5)
+        love.timer.sleep(5)
         print("restarting...")
         server = setmetatable({},{__index = Server})
         server:start()

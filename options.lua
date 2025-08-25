@@ -287,7 +287,6 @@ function GCSNOptionsHandler:drawInputLine(username, x, y, id)
     Draw.setColor(1, 1, 1)
 
     if self.options[id] ~= TextInput.input then
-        print(id)
         Draw.printShadow(self.options[id][1], line_x, y)
     else
         self.input_pos_x = line_x

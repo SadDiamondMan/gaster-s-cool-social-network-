@@ -1,4 +1,3 @@
-Socket = require("socket")
 enet = require("enet")
 JSON = require("json")
 NBT = require("shared.nbt")

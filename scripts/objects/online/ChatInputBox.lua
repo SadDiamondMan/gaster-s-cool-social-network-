@@ -42,6 +42,7 @@ function ChatInputBox:push(msg)
     if not ok then return end
     obj:setScale(.5)
     obj:resetState()
+    obj:addFX(TextFadeoutFX(self))
     print(obj.font_size)
     self.ui:addChild(obj)
 

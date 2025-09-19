@@ -55,6 +55,9 @@ end
 function ChatInputBox:draw()
     local line_y = self.height-(self.font_size*#self.input)
     if self.is_open then
+        love.graphics.setColor(0,0,0,0.5)
+        love.graphics.rectangle("fill", 0, SCREEN_HEIGHT - (self.font_size*#self.input), SCREEN_WIDTH, SCREEN_HEIGHT)
+        love.graphics.setColor(1,1,1)
         love.graphics.line(0,line_y, self.width,line_y)
         TextInput.draw({
             prefix_width = self.font:getWidth("> "),
@@ -88,7 +91,10 @@ function ChatInputBox:draw()
         end
         if not self.is_open then break end
     end]]
+    local was_debug = DEBUG_RENDER
+    DEBUG_RENDER = false
     super.draw(self)
+    DEBUG_RENDER = was_debug
 end
 
 function ChatInputBox:close()

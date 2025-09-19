@@ -35,6 +35,7 @@ local lastHearbeatTime = love.timer.getTime()
 local lastUpdateTime = 0
 local lastPlayerListTime = 0
 function Lib:init()
+    self.overlay_stage = Stage()
     ---@type ChatInputBox
     self.chat_box = ChatInputBox()
     self.partial = ""
@@ -182,7 +183,7 @@ function Lib:partyTable()
 end
 
 function Lib:postInit()
-    Game.stage:addChild(self.chat_box)
+    self.overlay_stage:addChild(self.chat_box)
     self.name = self.getConfig("username") or Game.save_name
     self.other_players = {}  -- Store other players
 
@@ -708,6 +709,11 @@ end
 function Lib:postDraw()
     local texture = Assets.getTexture("ui/gcsn/connectionoverlay/"..(Game:isLight() and "dark/" or "light/")..getConnectionSprite())
     Draw.draw(texture, 0, SCREEN_HEIGHT, 0, 2, 2, 0, texture:getHeight())
+    self.overlay_stage:draw()
+end
+
+function Lib:postUpdate()
+    self.overlay_stage:update()
 end
 
 return Lib

@@ -2,10 +2,10 @@
 ---@overload fun(...) : UserNametag
 local UserNametag, super = Class(Object)
 
-function UserNametag:init(player_character, name)
+function UserNametag:init(pc, name)
     super.init(self)
 
-    self.poilet_caper = player_character
+    self.pc = pc
 
     self.name = name
     self.length = string.len(self.name)
@@ -16,7 +16,14 @@ function UserNametag:init(player_character, name)
     self.connected = false
 
     self.heart_sprite = Assets.getTexture("player/heart")
-
+	
+	self:specialNames()
+	
+	self.name_text = Text(self.name, -self.pc.actor.width * 1.25, -self.pc.actor.height/2)
+	self.name_text:setScale(0.5)
+	self:addChild(self.name_text)
+	
+	self:addFX(OutlineFX({0, 0, 0}))
 end
 
 function UserNametag:pc_force_move(x, y, room)
@@ -25,52 +32,27 @@ function UserNametag:pc_force_move(x, y, room)
 
     end
 
-    self.poilet_caper.x = x
-    self.poilet_caper.y = y
+    self.pc.x = x
+    self.pc.y = y
+end
+
+function UserNametag:specialNames()
+	if self.name == "Hyperboid" then
+		self.name = "[color:red]Hyperboid"
+	elseif self.name == "SadDiamondMan" then
+		self.name = "[color:blue]SadDiamondMan"
+	elseif self.name == "HYPERBOID" then
+		self.name = "[image:player/heart][color:red]HYPERBOID"
+	end
 end
 
 function UserNametag:update()
     super.update(self)
-    self.name = self.poilet_caper.name
+    self.name = self.pc.name
+	
+	self:specialNames()
+	
+	self.name_text:setText(self.name)
 end
 
-function UserNametag:draw()
-    love.graphics.setFont(self.font)
-
-    love.graphics.scale(0.5, 0.5)
-    Draw.setColor(0, 0, 0, 1)
-    for x=-1, 1 do
-        for y=-1, 1 do
-        love.graphics.print(self.name, self.length *-self.length/2 + (x*2), -self.poilet_caper.actor.height/2 *2 + (y*2))
-    end
-    end
-
-    if self.name == "Hyperboid" then
-        Draw.setColor(1, 0, 0, 1)
-    elseif self.name == "SadDiamondMan" then
-        Draw.setColor(0, 0, 1, 1)
-    elseif self.name == "HYPERBOID" then
-        Draw.setColor(1, 0, 0, 1)
-        local x, y = self.length *-self.length/2 - 20, -self.poilet_caper.actor.height/2 *2 + 8
-        Draw.draw(self.heart_sprite, x, y - 2)
-        Draw.draw(self.heart_sprite, x, y + 2)
-        Draw.draw(self.heart_sprite, x + 2, y)
-        Draw.draw(self.heart_sprite, x - 2, y)
-
-        Draw.setColor(1, 0, 0, 1)
-
-        Draw.draw(self.heart_sprite, x, y)
-    else
-        Draw.setColor(1, 1, 1, 1)
-    end
-
-    love.graphics.print(self.name, self.length *-self.length/2, -self.poilet_caper.actor.height/2 *2)
-    if DEBUG_RENDER and self.poilet_caper.uuid then
-        love.graphics.setFont(self.smallfont)
-        love.graphics.print(self.poilet_caper.uuid, -105, (-self.poilet_caper.actor.height/2 *2) + 32)
-    end
-
-    Draw.setColor(1, 1, 1, 1)
-    super.draw(self)
-end
 return UserNametag

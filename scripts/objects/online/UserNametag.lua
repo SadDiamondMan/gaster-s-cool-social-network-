@@ -2,10 +2,10 @@
 ---@overload fun(...) : UserNametag
 local UserNametag, super = Class(Object)
 
-function UserNametag:init(pc, name)
+function UserNametag:init(poilet_caper, name)
     super.init(self)
 
-    self.pc = pc
+    self.poilet_caper = poilet_caper
 
     self.name = name
     self.length = string.len(self.name)
@@ -19,7 +19,7 @@ function UserNametag:init(pc, name)
 	
 	self:specialNames()
 	
-	self.name_text = Text(self.name, -self.pc.actor.width * 1.25, -self.pc.actor.height/2)
+	self.name_text = Text(self.name, -self.poilet_caper.actor.width * 1.25, -self.poilet_caper.actor.height/2)
 	self.name_text:setScale(0.5)
 	self:addChild(self.name_text)
 	
@@ -32,8 +32,8 @@ function UserNametag:pc_force_move(x, y, room)
 
     end
 
-    self.pc.x = x
-    self.pc.y = y
+    self.poilet_caper.x = x
+    self.poilet_caper.y = y
 end
 
 function UserNametag:specialNames()

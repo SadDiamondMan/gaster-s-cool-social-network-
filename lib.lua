@@ -199,6 +199,9 @@ function Lib:postInit()
 end
 
 function Lib:update()
+    if server:state() == "disconnected" then
+        self:reconnect()
+    end
     local currentTime = love.timer.getTime()
     if currentTime - lastHearbeatTime >= HEARTBEAT_INTERVAL then
         lastHearbeatTime = currentTime

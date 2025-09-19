@@ -2,10 +2,10 @@
 ---@overload fun(...) : UserNametag
 local UserNametag, super = Class(Object)
 
-function UserNametag:init(pc, name)
+function UserNametag:init(player_character, name)
     super.init(self)
 
-    self.pc = pc
+    self.poilet_caper = player_character
 
     self.name = name
     self.length = string.len(self.name)
@@ -25,13 +25,13 @@ function UserNametag:pc_force_move(x, y, room)
 
     end
 
-    self.pc.x = x
-    self.pc.y = y
+    self.poilet_caper.x = x
+    self.poilet_caper.y = y
 end
 
 function UserNametag:update()
     super.update(self)
-    self.name = self.pc.name
+    self.name = self.poilet_caper.name
 end
 
 function UserNametag:draw()
@@ -41,7 +41,7 @@ function UserNametag:draw()
     Draw.setColor(0, 0, 0, 1)
     for x=-1, 1 do
         for y=-1, 1 do
-        love.graphics.print(self.name, self.length *-self.length/2 + (x*2), -self.pc.actor.height/2 *2 + (y*2))
+        love.graphics.print(self.name, self.length *-self.length/2 + (x*2), -self.poilet_caper.actor.height/2 *2 + (y*2))
     end
     end
 
@@ -51,7 +51,7 @@ function UserNametag:draw()
         Draw.setColor(0, 0, 1, 1)
     elseif self.name == "HYPERBOID" then
         Draw.setColor(1, 0, 0, 1)
-        local x, y = self.length *-self.length/2 - 20, -self.pc.actor.height/2 *2 + 8
+        local x, y = self.length *-self.length/2 - 20, -self.poilet_caper.actor.height/2 *2 + 8
         Draw.draw(self.heart_sprite, x, y - 2)
         Draw.draw(self.heart_sprite, x, y + 2)
         Draw.draw(self.heart_sprite, x + 2, y)
@@ -64,10 +64,10 @@ function UserNametag:draw()
         Draw.setColor(1, 1, 1, 1)
     end
 
-    love.graphics.print(self.name, self.length *-self.length/2, -self.pc.actor.height/2 *2)
-    if DEBUG_RENDER and self.pc.uuid then
+    love.graphics.print(self.name, self.length *-self.length/2, -self.poilet_caper.actor.height/2 *2)
+    if DEBUG_RENDER and self.poilet_caper.uuid then
         love.graphics.setFont(self.smallfont)
-        love.graphics.print(self.pc.uuid, -105, (-self.pc.actor.height/2 *2) + 32)
+        love.graphics.print(self.poilet_caper.uuid, -105, (-self.poilet_caper.actor.height/2 *2) + 32)
     end
 
     Draw.setColor(1, 1, 1, 1)

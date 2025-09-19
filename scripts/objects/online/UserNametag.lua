@@ -15,6 +15,7 @@ function UserNametag:init(pc, name)
     self.smallfont = Assets.getFont("main",16)
     self.connected = false
 
+    self.heart_sprite = Assets.getTexture("player/heart")
 
 end
 
@@ -48,6 +49,17 @@ function UserNametag:draw()
         Draw.setColor(1, 0, 0, 1)
     elseif self.name == "SadDiamondMan" then
         Draw.setColor(0, 0, 1, 1)
+    elseif self.name == "HYPERBOID" then
+        Draw.setColor(1, 0, 0, 1)
+        local x, y = self.length *-self.length/2 - 20, -self.pc.actor.height/2 *2 + 8
+        Draw.draw(self.heart_sprite, x, y - 2)
+        Draw.draw(self.heart_sprite, x, y + 2)
+        Draw.draw(self.heart_sprite, x + 2, y)
+        Draw.draw(self.heart_sprite, x - 2, y)
+
+        Draw.setColor(1, 0, 0, 1)
+
+        Draw.draw(self.heart_sprite, x, y)
     else
         Draw.setColor(1, 1, 1, 1)
     end

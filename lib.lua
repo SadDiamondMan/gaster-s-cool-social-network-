@@ -702,6 +702,12 @@ local function getConnectionSprite()
     elseif server:state() == "connecting" then
         return "connecting"
     else
+        local ping = server:last_round_trip_time()
+        if ping < 200 then
+            return "best"
+        elseif ping < 400 then
+            return "good"
+        end
         return "ok"
     end
 end

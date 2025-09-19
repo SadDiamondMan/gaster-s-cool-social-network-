@@ -6,7 +6,10 @@ local Server = require("server")
 
 ---@type Server
 local server = Server()
-server:start()
+function love.load(args)
+    server:start(args[1])
+    
+end
 
 function love.update(dt)
     local success, value = xpcall(server.tick, debug.traceback, server) -- Call the main server function once per update

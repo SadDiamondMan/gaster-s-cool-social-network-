@@ -5,8 +5,8 @@ local TIMEOUT_THRESHOLD = 20
 
 function Server:init() end
 
-function Server:start()
-    local hoststr = "0.0.0.0:25574"
+function Server:start(hoststr)
+    hoststr = hoststr or "0.0.0.0:25574"
     self.host = enet.host_create(hoststr)
     print("Server started on " .. hoststr)
     self.clients = {}

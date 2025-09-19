@@ -5,7 +5,7 @@ NBT = require("shared.nbt")
 local Server = require("server")
 
 ---@type Server
-local server = setmetatable({},{__index = Server})
+local server = Server()
 server:start()
 
 function love.update(dt)
@@ -15,7 +15,7 @@ function love.update(dt)
         server:shutdown(value)
         love.timer.sleep(5)
         print("restarting...")
-        server = setmetatable({},{__index = Server})
+        server = Server()
         server:start()
     end
 end
@@ -42,7 +42,7 @@ function love.draw()
             line("Player: " .. player.username)
             line("UUID: " .. player.uuid)
             line("Actor: " .. player.actor)
-            line("Sprite: " .. player.sprite)
+            line("Sprite: " .. tostring(player.sprite or "NIL!!!!! WTF"))
             line("Map: " .. player.map)
             line("X: " .. player.x .. ", Y: " .. player.y)
             yOffset = yOffset + 10
@@ -52,4 +52,19 @@ end
 
 function love.quit()
     server:shutdown("Server closed")
+end
+
+local function hotswap()
+    package.loaded["server"] = nil
+    for key, value in pairs(require("server")) do
+        Server[key] = value
+    end
+    package.loaded["server"] = Server
+end
+
+function love.keypressed(key)
+    if key == "f8" then
+        print("Hotswapping server.lua...")
+        hotswap()
+    end
 end

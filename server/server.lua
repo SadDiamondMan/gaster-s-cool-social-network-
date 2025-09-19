@@ -1,6 +1,9 @@
 ---@class Server
 local Server = {}
+Server.__index = Server
 local TIMEOUT_THRESHOLD = 20
+
+function Server:init() end
 
 function Server:start()
     local hoststr = "0.0.0.0:25574"
@@ -477,5 +480,14 @@ function Server:tick()
     -- Check for inactive players
     self:checkForInactivePlayers()
 end
+
+setmetatable(Server, {
+    __call = function (class, ...)
+        local t = {}
+        setmetatable(t, class)
+        t:init()
+        return t
+    end
+})
 
 return Server

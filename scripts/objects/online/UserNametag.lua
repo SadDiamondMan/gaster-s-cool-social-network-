@@ -7,8 +7,7 @@ function UserNametag:init(poilet_caper, name)
 
     self.poilet_caper = poilet_caper
 
-    self.length = string.len(self.name)
-
+    self.length = string.len(name)
 
     self.font = Assets.getFont("main")
     self.smallfont = Assets.getFont("main",16)
@@ -16,9 +15,7 @@ function UserNametag:init(poilet_caper, name)
 
     self.heart_sprite = Assets.getTexture("player/heart")
 	
-	self.name = self:getSpecialName(name)
-	
-	self.name_text = Text(self.name, -self.poilet_caper.actor.width * 1.25, -self.poilet_caper.actor.height/2)
+	self.name_text = Text(self:getSpecialName(name), -self.poilet_caper.actor.width * 1.25, -self.poilet_caper.actor.height/2)
 	self.name_text:setScale(0.5)
 	self:addChild(self.name_text)
 	

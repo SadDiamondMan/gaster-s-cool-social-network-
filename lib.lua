@@ -1,3 +1,5 @@
+error("This branch is killed go back to main")
+
 ---@class Lib
 local Lib = {}
 function Lib.getConfig(conf)

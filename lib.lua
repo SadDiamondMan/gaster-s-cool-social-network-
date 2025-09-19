@@ -3,6 +3,7 @@ local Lib = {}
 function Lib.getConfig(conf)
     local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
     if not ok then return (Kristal.Config["plugins/gcsn"][conf] or ({
+        ["danger_mode"] = false,
         ["domain"] = "serveo.net",
         ["chat_format"] = "%s: ",
         ["port"] = 25574

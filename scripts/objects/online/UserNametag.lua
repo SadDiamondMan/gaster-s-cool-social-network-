@@ -14,6 +14,9 @@ function UserNametag:init(poilet_caper, name)
     self.connected = false
 
     self.heart_sprite = Assets.getTexture("player/heart")
+    if not GCSN.getConfig("danger_mode") then
+        name = name:gsub("%[", "[ ")
+    end
 	
 	self.name_text = Text(self:getSpecialName(name), self.poilet_caper.actor.width/2, -self.poilet_caper.actor.height/2, nil, nil, {auto_size = true})
 	self.name_text:setOrigin(0.5)

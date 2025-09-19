@@ -27,7 +27,12 @@ end
 ---@param msg {sender:string, content:string[], timestamp: number?}
 function ChatInputBox:push(msg)
     --table.insert(self.chat_history, msg)
-    local text = string.format(GCSN.getConfig("chat_format"), msg.sender) .. msg.content
+    local sender = msg.sender
+
+    if not GCSN.getConfig("danger_mode") then
+        sender = sender:gsub("%[", "[ ")
+    end
+    local text = string.format(GCSN.getConfig("chat_format"), sender) .. "[wave:0][color:reset][font:main_mono]" .. msg.content
     ---@type boolean, Text
     local ok, obj = pcall(Text, text, nil,nil,(SCREEN_WIDTH*2) - 40,nil, {
         font = "main_mono",

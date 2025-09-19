@@ -48,7 +48,7 @@ end
 
 function UserNametag:update()
     super.update(self)
-    self.name = self.pc.name
+    self.name = self.poilet_caper.name
 	
 	self:specialNames()
 	

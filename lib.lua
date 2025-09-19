@@ -689,9 +689,6 @@ function Lib:parseServerData(data)
                     self:playerBattleLocation()
                 end
             end
-        elseif data.command == "chat" then
-            local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
-            self.chat_box:push({sender = data.username, content = data.message})
         elseif data.command == "set_party_number" then
             batl.party[1].party_number = data.party_number
             self:playerBattleLocation()

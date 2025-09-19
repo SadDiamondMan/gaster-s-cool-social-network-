@@ -15,7 +15,8 @@ function UserNametag:init(poilet_caper, name)
 
     self.heart_sprite = Assets.getTexture("player/heart")
 	
-	self.name_text = Text(self:getSpecialName(name), -self.poilet_caper.actor.width * 1.25, -self.poilet_caper.actor.height/2)
+	self.name_text = Text(self:getSpecialName(name), self.poilet_caper.actor.width/2, -self.poilet_caper.actor.height/2, nil, nil, {auto_size = true})
+	self.name_text:setOrigin(0.5)
 	self.name_text:setScale(0.5)
 	self:addChild(self.name_text)
 	
@@ -33,13 +34,14 @@ function UserNametag:pc_force_move(x, y, room)
 end
 
 function UserNametag:getSpecialName(name)
-	if name == "Hyperboid" then
-		return "[color:red]Hyperboid"
-	elseif name == "SadDiamondMan" then
-		return "[color:blue]SadDiamondMan"
-	elseif name == "HYPERBOID" then
-		return "[image:player/heart][color:red]HYPERBOID"
-	end
+    if name == "Hyperboid" then
+        return "[color:red]Hyperboid"
+    elseif name == "SadDiamondMan" then
+        return "[color:blue]SadDiamondMan"
+    elseif name == "HYPERBOID" then
+        return "[image:player/heart][color:red]HYPERBOID"
+    end
+    return name
 end
 
 return UserNametag

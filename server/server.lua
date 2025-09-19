@@ -246,6 +246,7 @@ function Server:processClientMessage(client, data)
     elseif command == "chat" then
         local id = message.uuid
         if #message.message == 0 then return end
+        if #message.message >= 1024 then return end
         local sender = self.players[id]
         if sender then
             print(sender.username, message.message)

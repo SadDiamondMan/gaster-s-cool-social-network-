@@ -46,13 +46,4 @@ function UserNametag:specialNames()
 	end
 end
 
-function UserNametag:update()
-    super.update(self)
-    self.name = self.poilet_caper.name
-	
-	self:specialNames()
-	
-	self.name_text:setText(self.name)
-end
-
 return UserNametag

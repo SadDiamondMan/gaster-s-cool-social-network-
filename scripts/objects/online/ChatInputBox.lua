@@ -32,6 +32,7 @@ function ChatInputBox:push(msg)
     if not GCSN.getConfig("danger_mode") then
         sender = sender:gsub("%[", "[ ")
     end
+    sender = GCSN:getSpecialName(sender)
     local text = string.format(GCSN.getConfig("chat_format"), sender) .. "[wave:0][color:reset][font:main_mono]" .. msg.content
     ---@type boolean, Text
     local ok, obj = pcall(Text, text, nil,nil,(SCREEN_WIDTH*2) - 40,nil, {
@@ -41,7 +42,6 @@ function ChatInputBox:push(msg)
     if not ok then return end
     obj:setScale(.5)
     obj:resetState()
-    obj:addFX(TextFadeoutFX(self))
     print(obj.font_size)
     self.ui:addChild(obj)
 

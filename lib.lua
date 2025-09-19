@@ -723,4 +723,19 @@ function Lib:postUpdate()
     self.overlay_stage:update()
 end
 
+function Lib:getSpecialNamePrefix(name)
+    if name == "Hyperboid" then
+        return "[color:red]"
+    elseif name == "SadDiamondMan" then
+        return "[color:blue]"
+    elseif name == "HYPERBOID" then
+        return "[image:player/heart,0,0,2,2][color:red] "
+    end
+    return ""
+end
+
+function Lib:getSpecialName(name)
+    return self:getSpecialNamePrefix(name) .. name
+end
+
 return Lib

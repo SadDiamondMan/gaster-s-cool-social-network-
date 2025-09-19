@@ -281,10 +281,19 @@ end
 function Lib:updateWorld(...)
     local player = Game.world.player
     -- Update the current time
+    if not Game.world.player then return end --need this since the player might not always exist
     local currentTime = love.timer.getTime()
 
     -- Throttle player position update packets
     if currentTime - lastUpdateTime >= THROTTLE_INTERVAL then
+        local sprite_val
+
+        if player.sprite.anim then
+            sprite_val = player.sprite.anim
+        else
+            sprite_val = player.sprite.sprite_options[1]
+        end
+
         local updateMessage = {
             command = "world",
             subCommand = "update",
@@ -293,7 +302,7 @@ function Lib:updateWorld(...)
             y = player.y,
             map = (Mod.info.id..":"..Game.world.map.id) or "null",
             actor = player.actor.id,
-            sprite = player.sprite.sprite_options[1]
+            sprite = sprite_val
         }
         sendToServer(updateMessage)
         lastUpdateTime = currentTime
@@ -532,10 +541,15 @@ function Lib:parseServerData(data)
                             end
                         end
                         
-                        if other_player.sprite.sprite_options[1] ~= playerData.sprite then
-                            other_player:setSprite(playerData.sprite)
-                        end
+                        local dat = playerData.sprite
+                        local Pspr = other_player.sprite
 
+                        local needs_update = (Pspr.anim and Pspr.anim ~= dat) or (not Pspr.anim and Pspr.sprite_options[1] ~= dat)
+
+                        if needs_update then
+                            other_player:setSprite(dat)
+                            other_player:setAnimation(dat)
+                        end
 
                     else
                         local otherplr

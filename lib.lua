@@ -180,6 +180,7 @@ function Lib:partyTable()
     
     return full_party
 end
+
 function Lib:postInit()
     Game.stage:addChild(self.chat_box)
     self.name = self.getConfig("username") or Game.save_name
@@ -221,6 +222,10 @@ function Lib:update()
         end
         event = host:service()
     end
+end
+
+function Lib:reconnect()
+    server = assert(host:connect(("%s:%d"):format(Lib.getConfig("domain"), Lib.getConfig("port"))))
 end
 
 function Lib:unload()

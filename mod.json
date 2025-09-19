@@ -12,5 +12,11 @@
             "keys": ["/"],
             "gamepad": [],
         },
+        {
+            "name": "Show player list",
+            "id": "gcsn_playerlist",
+            "keys": ["tab"],
+            "gamepad": ["select"],
+        },
     ],
 }

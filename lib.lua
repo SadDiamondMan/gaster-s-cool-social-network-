@@ -738,12 +738,10 @@ function Lib:postUpdate()
 end
 
 function Lib:getSpecialNamePrefix(name)
-    if name == "Hyperboid" then
-        return "[color:red]"
-    elseif name == "SadDiamondMan" then
-        return "[color:blue]"
-    elseif name == "HYPERBOID" then
-        return "[image:player/heart,0,0,2,2][color:red] "
+    if name:lower() == "hyperboid" then
+        return "[image:ui/gcsn/badgeicons/rewrote_the_codebase_award,0,2,2,2]"
+    elseif name:lower() == "saddiamondman" then
+        return "[image:ui/gcsn/badgeicons/the_original,0,2,2,2][color:blue]"
     end
     return ""
 end

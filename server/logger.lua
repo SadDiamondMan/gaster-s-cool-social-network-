@@ -5,15 +5,39 @@ local Logger, super = class("Logger")
 
 Logger.FG_COLOR_PATTERN = "\x1b[38;2;%d;%d;%dm"
 Logger.BG_COLOR_PATTERN = "\x1b[38;2;%d;%d;%dm"
+---@enum (key) Logger.SEVERITY 
+Logger.SEVERITIES = {
+    DEBUG = {
+        color = {0.5,0.5,0.5};
+        };
+    INFO = {
+        color = {1.0,1.0,1.0};
+    };
+    WARNING = {
+        color = {1.0,1.0,0.5};
+    };
+    ERROR = {
+        color = {0.5,1.0,0.5};
+    };
+}
 
 function Logger:init(name, options)
     self.name = name
 end
 
+local function rgbToHex(r,g,b)
+    if type(r) == "table" then
+        r,g,b = unpack(r)
+    end
+    r,g,b = r*255, g*255, b*255
+    return ("#%x%x%x"):format(r,g,b)
+end
+
 ---@param message string
+---@param severity Logger.SEVERITY
 ---@protected
 function Logger:_write(message, severity)
-    local format_message = ("[%s] [%s] %s"):format(self.name, severity, message)
+    local format_message = ("[%s] [color:%s][%s] %s"):format(self.name, rgbToHex(Logger.SEVERITIES[severity].color), severity,  message)
     local term_message = buffer.new(#format_message)
     local text = {}
     local current = ""

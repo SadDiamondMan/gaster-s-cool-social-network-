@@ -1,7 +1,12 @@
 utf8 = require("utf8")
+
+function gcsnSharedRequire(path)
+    return require("shared."..path)
+end
+
 require("stupidclassystem")
 JSON = require("json")
-NBT = require("shared.nbt")
+NBT = gcsnSharedRequire("nbt")
 ---@type Server
 local Server = require("server")
 

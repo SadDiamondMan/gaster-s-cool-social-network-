@@ -3,6 +3,18 @@ local Lib = {}
 Registry.registerGlobal("GCSN", Lib)
 GCSN = Lib
 
+local function sharedRequire(path)
+    if Mod.info.libs.gasterscoolsocialnetwork then
+        return libRequire("gasterscoolsocialnetwork", "server.shared."..path)
+    end
+    return love.filesystem.load(Kristal.Mods.data.gcsn.path.."/server/shared/" .. (path:gsub("%.", "/") .. ".lua"))()
+end
+
+Registry.registerGlobal("gcsnSharedRequire", sharedRequire)
+gcsnSharedRequire = sharedRequire
+
+pluey = sharedRequire("nbt")
+
 function Lib.getConfig(conf)
     local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
     if not ok then return (Kristal.Config["plugins/gcsn"][conf] or ({

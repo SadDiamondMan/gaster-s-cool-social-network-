@@ -1,0 +1,39 @@
+{
+    "workspace": {
+        "enableReindex": false,
+        "encoding": "utf-8",
+        "ignoreDir": [],
+        "ignoreGlobs": [],
+        "library": [
+            "/home/hyperboid/Applications/raspberryengine/.love_api"
+        ],
+        "moduleMap": [],
+        "preloadFileSize": 0,
+        "reindexDuration": 5000,
+        "workspaceRoots": []
+    },
+    "completion": {
+        "autoRequire": true,
+        "autoRequireFunction": "require",
+        "autoRequireNamingConvention": "keep-class",
+        "autoRequireSeparator": ".",
+        "baseFunctionIncludesName": true,
+        "callSnippet": false
+    },
+    "diagnostics": {
+        "severity": {
+        }
+    },
+    "runtime": {
+        "classDefaultCall": {
+            "forceNonColon": true,
+            "forceReturnSelf": true,
+            "functionName": "init"
+        },
+        "extensions": [],
+        "frameworkVersions": ["love2d"],
+        "requireLikeFunction": ["gcsnSharedRequire"],
+        "requirePattern": [],
+        "version": "LuaJIT"
+    }
+}

@@ -1,5 +1,5 @@
 local buffer = require("string.buffer")
-local StringUtils = require("server.utils.string")
+local StringUtils = gcsnSharedRequire("utils.string")
 ---@class Logger: Class
 local Logger, super = class("Logger")
 

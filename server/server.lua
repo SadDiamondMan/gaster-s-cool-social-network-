@@ -1,7 +1,7 @@
 local enet = require("enet")
-local Logger = require("server.logger")
-local NetPlayer = require("server.shared.netplayer")
-local StringUtils = require("server.utils.string")
+local Logger = require("logger")
+local NetPlayer = gcsnSharedRequire("netplayer")
+local StringUtils = gcsnSharedRequire("utils.string")
 
 ---@class Server
 local Server = class("Server")

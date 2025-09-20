@@ -37,6 +37,9 @@ end
 ---@param search string|any -- The client to search for
 ---@return NetPlayer? -- A player if one is found
 function Server:getPlayer(search)
+    if not search then
+        return
+    end
     if self.players[search] then
         return self.players[search]
     end
@@ -540,6 +543,18 @@ function Server:processPlayerCommand(player, command)
         end
         local map, x, y = target_player.map, target_player.x, target_player.y
         player:send({
+            command = "teleport",
+            x = x, y = y, map = map,
+        })
+        return true
+    elseif command[1] == "tphere" then
+        local target_player = self:getPlayer(command[2])
+        if not target_player then
+            player:sendSystemMessage("Unknown player: "..command[2]..".")
+            return true
+        end
+        local map, x, y = player.map, player.x, player.y
+        target_player:send({
             command = "teleport",
             x = x, y = y, map = map,
         })

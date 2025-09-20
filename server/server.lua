@@ -1,6 +1,7 @@
 local enet = require("enet")
 local Logger = require("server.logger")
 local NetPlayer = require("server.shared.netplayer")
+local StringUtils = require("server.utils.string")
 
 ---@class Server
 local Server = class("Server")
@@ -24,7 +25,7 @@ end
 
 ---Gets a player by their client
 ---@param client any -- The client to search for
----@return nil | table -- A player if one is found
+---@return NetPlayer? -- A player if one is found
 function Server:getPlayerFromClient(client)
     for key, value in pairs(self.players) do
         if value.client == client then
@@ -261,7 +262,13 @@ function Server:processClientMessage(client, data)
             return
         end
         if string.sub(message.message, 1, 1) == "/" then
-            print("command received")
+            local player = assert(self:getPlayerFromClient(client))
+            local valid_command = self:processPlayerCommand(player, StringUtils.split(message.message:sub(2), " "))
+            print('plih', valid_command, "["..tostring(player.client).."]")
+            if not valid_command then
+                player:sendSystemMessage("Unknown command.")
+                self.host:flush()
+            end
             return
         end 
         for _, reciever in pairs(self.players) do
@@ -445,7 +452,7 @@ function Server:processClientMessage(client, data)
             end
         end
     elseif command == "disconnect" then
-        print("Player " .. self:getPlayerFromClient(client).username .. " disconnected")
+        self.logger:info("Player " .. self:getPlayerFromClient(client).username .. " disconnected")
         self:removePlayer(client)
     elseif command == "heartbeat" then
         local player = self:getPlayerFromClient(client)
@@ -453,7 +460,7 @@ function Server:processClientMessage(client, data)
             player.lastUpdate = love.timer.getTime()
         end
     else
-        print("Unhandled command:".. command)
+        self.logger:warn("Unhandled command:".. command)
         print(data)
     end
 end
@@ -483,6 +490,24 @@ function Server:tick()
 
     -- Check for inactive players
     self:checkForInactivePlayers()
+end
+
+---@param player NetPlayer
+---@param command string[]
+---@return boolean command_found
+function Server:processPlayerCommand(player, command)
+    print(unpack(command))
+    if command[1] == "restart" then
+        if player.admin then
+            self:shutdown("Server restarting...")
+            love.event.quit("restart")
+            return true
+        else
+            player:sendSystemMessage("No permission")
+            return true
+        end
+    end
+    return false
 end
 
 return Server

@@ -25,7 +25,7 @@ function ChatInputBox:updateSizing()
 end
 
 ---@param msg {sender:string, content:string[], timestamp: number?}
-function ChatInputBox:push(msg)
+function ChatInputBox:pushChatMessage(msg)
     --table.insert(self.chat_history, msg)
     local sender = msg.sender
 
@@ -34,6 +34,9 @@ function ChatInputBox:push(msg)
     end
     sender = GCSN:getSpecialName(sender)
     local text = string.format(GCSN.getConfig("chat_format"), sender) .. "[wave:0][color:reset][font:main_mono]" .. msg.content
+    self:push(text)
+end
+function ChatInputBox:push(text)
     ---@type boolean, Text
     local ok, obj = pcall(Text, text, nil,nil,(SCREEN_WIDTH*2) - 40,nil, {
         font = "main_mono",

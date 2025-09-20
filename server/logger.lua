@@ -11,6 +11,7 @@ function Logger:init(name, options)
 end
 
 ---@param message string
+---@protected
 function Logger:_write(message, severity)
     local format_message = ("[%s] [%s] %s"):format(self.name, severity, message)
     local term_message = buffer.new(#format_message)
@@ -79,6 +80,13 @@ end
 function Logger:info(message, ...)
     message = string.format(message, ...)
     self:_write(message, "INFO")
+end
+
+---@param message string
+---@param ... any
+function Logger:warn(message, ...)
+    message = string.format(message, ...)
+    self:_write(message, "WARNING")
 end
 
 ---@param message string

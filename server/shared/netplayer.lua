@@ -8,14 +8,17 @@ function NetPlayer:init(message, client, id)
     self.y = 0.0
     self.map = "room1"
     self.uuid = id
+    self.username = message.username or "User"
     -- TODO: rename to last_update
     self.lastUpdate = love.timer.getTime()
+    -- If the client is localhost, consider this player an admin.
+    self.admin = (tostring(client):sub(1,4) == "127.")
 end
 
-function NetPlayer:sendSystemMessage(content)
+function NetPlayer:sendSystemMessage(message)
     self:send {
         command = "systemmessage",
-        content = content,
+        message = message,
     }
 end
 

@@ -531,7 +531,10 @@ end)
 
 function Lib:parseServerData(data)
     if data then
-        -- print("[NET] "..Utils.dump(data))
+        if data.command ~= "update" then
+            print("[NET] "..Utils.dump(data))
+            
+        end
         if data.command == "register" then
             self.uuid = data.uuid
             Game:setFlag("GCSN_UUID", self.uuid)
@@ -588,13 +591,15 @@ function Lib:parseServerData(data)
             end
         elseif data.command == "chat" then
             local sender = data.uuid == self.uuid and Game.world.player or self.other_players[data.uuid]
-            self.chat_box:push({sender = data.username, content = data.message})
+            self.chat_box:pushChatMessage({sender = data.username, content = data.message})
             if sender == nil then return end
             local bubble = ChatBubble(sender.actor, data.message)
             bubble:setScale(0.25)
             sender:addChild(bubble)
         elseif data.command == "disconnect" then
-            self.chat_box:push({sender = "GCSN", content = data.message})
+            self.chat_box:push(data.message)
+        elseif data.command == "systemmessage" then
+            self.chat_box:push(data.message)
         elseif data.command == "RemoveOtherPlayersFromMap" then
             for _, uuid in ipairs(data.players) do
                 if self.other_players[uuid] then
@@ -608,6 +613,7 @@ function Lib:parseServerData(data)
         end
     end
     -- TODO: Rewrite battles entirely. Why the heck do battles involve update, anyway?
+    --[[
     if data then
         if data.command == "battle_update" then
             for _, playerData in ipairs(data.players) do
@@ -726,6 +732,7 @@ function Lib:parseServerData(data)
             self:playerBattleLocation()
         end
     end
+    --]]
 end
 
 local function getConnectionSprite()

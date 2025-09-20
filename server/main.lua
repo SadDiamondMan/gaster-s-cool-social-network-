@@ -1,3 +1,4 @@
+utf8 = require("utf8")
 require("stupidclassystem")
 JSON = require("json")
 NBT = require("shared.nbt")

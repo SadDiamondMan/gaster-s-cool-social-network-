@@ -34,6 +34,19 @@ function Server:getPlayerFromClient(client)
     end
 end
 
+---@param search string|any -- The client to search for
+---@return NetPlayer? -- A player if one is found
+function Server:getPlayer(search)
+    if self.players[search] then
+        return self.players[search]
+    end
+    for key, value in pairs(self.players) do
+        if value.client == search or value.username == search then
+            return value
+        end
+    end
+end
+
 ---Sends data to the specified client, serializing if necessary.
 ---@param client any -- The client to send to
 ---@param data string|table
@@ -518,6 +531,18 @@ function Server:processPlayerCommand(player, command)
             list = list .. player.username
         end
         player:sendSystemMessage(list)
+        return true
+    elseif command[1] == "tpto" then
+        local target_player = self:getPlayer(command[2])
+        if not target_player then
+            player:sendSystemMessage("Unknown player: "..command[2]..".")
+            return true
+        end
+        local map, x, y = target_player.map, target_player.x, target_player.y
+        player:send({
+            command = "teleport",
+            x = x, y = y, map = map,
+        })
         return true
     end
     return false

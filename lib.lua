@@ -536,8 +536,7 @@ end)
 function Lib:parseServerData(data)
     if data then
         if data.command ~= "update" then
-            print("[NET] "..Utils.dump(data))
-            
+            --print("[NET] "..Utils.dump(data))
         end
         if data.command == "register" then
             self.uuid = data.uuid
@@ -614,6 +613,23 @@ function Lib:parseServerData(data)
                     self.other_players[uuid].fadingOut = true
                     self.other_players[uuid] = nil
                 end
+            end
+        elseif data.command == "teleport" then
+            local findstart, findend, mod, map = string.find(data.map or "", "([%w_]+):(.*)")
+            if map and map ~= Game.world.map.id then
+                if mod == Mod.info.id then
+                    Game.world:mapTransition(map, data.x or data.marker, data.y)
+                elseif Game.swapIntoMod then
+                    -- todo I forgor the args
+                else
+                    self.chat_box:push("Can't teleport across mods. Attempted to teleport into "..mod..".")
+                end
+            else
+                local x, y = data.x, data.y
+                if data.marker then
+                    x, y = Game.world.map:getMarker(data.marker)
+                end
+                Game.world.player:setPosition(x, y)
             end
         else
             Kristal.Console:warn("Unhandled command: " .. (data.command or "<nil>"))

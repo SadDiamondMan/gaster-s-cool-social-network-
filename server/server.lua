@@ -198,7 +198,8 @@ function Server:processClientMessage(client, data)
     if command == "register" then
         local id = message.uuid or uuid()
         self.players[id] = NetPlayer(message, client, id)
-        self.logger:info("Player " .. message.username .. "(uuid=" .. id .. ") registered with actor: " .. self.players[id].actor)
+        self.logger:info("Player " .. message.username .. " registered with actor: " .. self.players[id].actor)
+        self.logger:debug("(uuid=" .. id .. ")")
         self:sendClientMessage(client, {
             command = "register",
             uuid = id
@@ -467,10 +468,10 @@ function Server:tick()
         if event.type == "receive" then
             self:processClientMessage(event.peer, event.data)
         elseif event.type == "connect" then
-            self.logger:info("%s connected.", event.peer)
+            self.logger:debug("%s connected.", event.peer)
             table.insert(self.clients, event.peer)
         elseif event.type == "disconnect" then
-            self.logger:info("%s disconnected.", event.peer)
+            self.logger:debug("%s disconnected.", event.peer)
             self:removePlayer(event.peer)
         end
         event = self.host:service()

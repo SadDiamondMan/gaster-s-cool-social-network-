@@ -13,6 +13,9 @@ local Server = require("server")
 ---@type Server
 local server = Server()
 function love.load(args)
+    if args[2] ~= "--no-window" then
+        love.window.setMode(640,480, {resizable = true})
+    end
     server:start(args[1])
     
 end

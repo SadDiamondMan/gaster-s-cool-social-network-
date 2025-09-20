@@ -3,6 +3,11 @@ local StringUtils = gcsnSharedRequire("utils.string")
 ---@class Logger: Class
 local Logger, super = class("Logger")
 
+local print = print
+_G.print = function(...)
+    print("use self.logger:debug() dumbass\n", ...)
+end
+
 Logger.FG_COLOR_PATTERN = "\x1b[38;2;%d;%d;%dm"
 Logger.BG_COLOR_PATTERN = "\x1b[38;2;%d;%d;%dm"
 ---@enum (key) Logger.SEVERITY 

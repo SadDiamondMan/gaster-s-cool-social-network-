@@ -77,8 +77,6 @@ local function uuid()
     end)
 end
 
---print(uuid())
-
 -- Remove disconnected player
 function Server:removePlayer(client)
     for i, c in ipairs(self.clients) do
@@ -89,7 +87,7 @@ function Server:removePlayer(client)
     end
     for id, player in pairs(self.players) do
         if player.client == client then
-            print("Player " .. self.players[id].username .. " removed due to disconnection.")
+            self.logger:info("Player " .. self.players[id].username .. " removed due to disconnection.")
             self.players[id] = nil
             break
         end
@@ -192,7 +190,7 @@ end
 -- Handle client messages
 function Server:processClientMessage(client, data)
     local ok, message = pcall(JSON.decode, data)
-    if not ok then return print(message) end
+    if not ok then return self.logger:error("Malformed JSON data %s: %s", data message) end
     local command = message.command
     local subCommand = message.subCommand
     local subSubC = message.subSubC
@@ -200,7 +198,7 @@ function Server:processClientMessage(client, data)
     if command == "register" then
         local id = message.uuid or uuid()
         self.players[id] = NetPlayer(message, client, id)
-        print("Player " .. message.username .. "(uuid=" .. id .. ") registered with actor: " .. self.players[id].actor)
+        self.logger:info("Player " .. message.username .. "(uuid=" .. id .. ") registered with actor: " .. self.players[id].actor)
         self:sendClientMessage(client, {
             command = "register",
             uuid = id
@@ -257,14 +255,12 @@ function Server:processClientMessage(client, data)
         if #message.message >= 1024 then return end
         local sender = self.players[id]
         if sender then
-            print(sender.username, message.message)
         else
             return
         end
         if string.sub(message.message, 1, 1) == "/" then
             local player = assert(self:getPlayerFromClient(client))
             local valid_command = self:processPlayerCommand(player, StringUtils.split(message.message:sub(2), " "))
-            print('plih', valid_command, "["..tostring(player.client).."]")
             if not valid_command then
                 player:sendSystemMessage("Unknown command.")
                 self.host:flush()
@@ -461,7 +457,6 @@ function Server:processClientMessage(client, data)
         end
     else
         self.logger:warn("Unhandled command:".. command)
-        print(data)
     end
 end
 
@@ -472,10 +467,10 @@ function Server:tick()
         if event.type == "receive" then
             self:processClientMessage(event.peer, event.data)
         elseif event.type == "connect" then
-            print(event.peer, "connected.")
+            self.logger:info("%s connected.", event.peer)
             table.insert(self.clients, event.peer)
         elseif event.type == "disconnect" then
-            print(event.peer, "disconnected.")
+            self.logger:info("%s disconnected.", event.peer)
             self:removePlayer(event.peer)
         end
         event = self.host:service()
@@ -496,7 +491,6 @@ end
 ---@param command string[]
 ---@return boolean command_found
 function Server:processPlayerCommand(player, command)
-    print(unpack(command))
     if command[1] == "restart" then
         if player.admin then
             self:shutdown("Server restarting...")
@@ -506,6 +500,14 @@ function Server:processPlayerCommand(player, command)
             player:sendSystemMessage("No permission")
             return true
         end
+    elseif command[1] == "list" then
+        local list = "Players:"
+        for _, player in pairs(self.players) do
+            list = (list .. "\n")
+            list = list .. player.username
+        end
+        player:sendSystemMessage(list)
+        return true
     end
     return false
 end

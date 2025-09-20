@@ -60,7 +60,9 @@ function love.draw()
 end
 
 function love.quit()
-    server:shutdown("Server closed")
+    if server.running then
+        server:shutdown("Server closed")
+    end
 end
 
 local function hotswap()
@@ -75,5 +77,8 @@ function love.keypressed(key)
     if key == "f8" then
         print("Hotswapping server.lua...")
         hotswap()
+    elseif key == "r" and (love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift")) then
+        server:shutdown("Server restarting.")
+        love.event.quit("restart")
     end
 end

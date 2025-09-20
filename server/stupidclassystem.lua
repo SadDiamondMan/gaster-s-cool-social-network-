@@ -6,9 +6,8 @@ ClassSystem.CLASS_MT = {
     __call = function (class, ...)
         local t = {}
         setmetatable(t, class)
-        t.__gcproxy = newproxy(true)
-        getmetatable(t.__gcproxy).__gc = function ()
-            t:destroy()
+        if not t.init then
+            error("Class "..class.classname.." has no init somehow")
         end
         t:init(...)
         return t
@@ -23,7 +22,6 @@ ClassSystem.CLASS_INCLUDE_SKIP_FIELDS = {
 }
 
 function ClassSystem.BASE_CLASS:init() end
-function ClassSystem.BASE_CLASS:destroy() end
 
 ---@param classname string
 ---@param include table?
@@ -37,11 +35,17 @@ function ClassSystem.new(classname, include, newclass)
         end
     end
     newclass.classname = classname
+    newclass.__index = newclass
     setmetatable(newclass, ClassSystem.CLASS_MT)
     return newclass, include
 end
 
 ---@diagnostic disable-next-line: lowercase-global
 class = ClassSystem.new
+
+-- Kristal class function, for classes shared between client and server
+function Class(include, classname)
+    return ClassSystem.new(classname, include)
+end
 
 return ClassSystem

@@ -1,16 +1,20 @@
 local enet = require("enet")
+local Logger = require("server.logger")
 
 ---@class Server
 local Server = class("Server")
 Server.__index = Server
 local TIMEOUT_THRESHOLD = 20
 
-function Server:init() end
+function Server:init()
+    self.logger = Logger("Server")
+end
 
 function Server:start(hoststr)
+    self.running = true
     hoststr = hoststr or "0.0.0.0:25574"
     self.host = enet.host_create(hoststr)
-    print("Server started on " .. hoststr)
+    self.logger:info("Server started on %s.", hoststr)
     self.clients = {}
     self.players = {}
     self.updateInterval = 0.1
@@ -42,6 +46,7 @@ function Server:sendClientMessage(client, data)
 end
 
 function Server:shutdown(message)
+    self.running = false
     for _, client in ipairs(self.clients) do
         self:sendClientMessage(client, {
             command = "disconnect",

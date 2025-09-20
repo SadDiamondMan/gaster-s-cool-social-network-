@@ -190,7 +190,7 @@ end
 -- Handle client messages
 function Server:processClientMessage(client, data)
     local ok, message = pcall(JSON.decode, data)
-    if not ok then return self.logger:error("Malformed JSON data %s: %s", data message) end
+    if not ok then return self.logger:error("Malformed JSON data %s: %s", data, message) end
     local command = message.command
     local subCommand = message.subCommand
     local subSubC = message.subSubC

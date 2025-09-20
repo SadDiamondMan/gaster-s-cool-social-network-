@@ -34,14 +34,15 @@ local server = assert(host:connect(("%s:%d"):format(Lib.getConfig("domain"), Lib
 
 local json = JSON
 
-local function sendToServer(message)
+function GCSN.sendToServer(message)
     local encodedMessage = json.encode(message)
     -- print("[OUT] "..Utils.dump(encodedMessage))
     server:send(encodedMessage .. "\n")
 end
 
+---@deprecated
 function Game:sendToServer(message) --do not say a word
-    sendToServer(message)
+    GCSN.sendToServer(message)
 end
 
 -- Throttle interval (in seconds)
@@ -221,7 +222,7 @@ function Lib:update()
     local currentTime = love.timer.getTime()
     if currentTime - lastHearbeatTime >= HEARTBEAT_INTERVAL then
         lastHearbeatTime = currentTime
-        sendToServer({
+        GCSN.sendToServer({
             command = "heartbeat",
             gamestate = Game.state
         })
@@ -231,7 +232,7 @@ function Lib:update()
     while event do
         if event.type == "connect" then
             print("Connected to", event.peer)
-            sendToServer(self.register_message)
+            GCSN.sendToServer(self.register_message)
         elseif event.type == "receive" then
             local ok, data = pcall(JSON.decode, event.data)
             if ok then
@@ -249,7 +250,7 @@ function Lib:reconnect()
 end
 
 function Lib:unload()
-    sendToServer({command = "disconnect"})
+    GCSN.sendToServer({command = "disconnect"})
     server:disconnect()
 end
 
@@ -270,7 +271,7 @@ function Lib:updateBattle(batl, ...)
             health = {player.chara.health, player.chara.stats.health},
             location = {player.x, player.y}
         }
-        sendToServer(updateMessage)
+        GCSN.sendToServer(updateMessage)
         lastUpdateTime = currentTime
     end
 
@@ -287,7 +288,7 @@ function Lib:updateBattle(batl, ...)
             username = self.name,
             players = playersList
         }
-        sendToServer(currentPlayersMessage)
+        GCSN.sendToServer(currentPlayersMessage)
         lastPlayerListTime = currentTime
     end
 
@@ -319,7 +320,7 @@ function Lib:updateWorld(...)
             actor = player.actor.id,
             sprite = sprite_val
         }
-        sendToServer(updateMessage)
+        GCSN.sendToServer(updateMessage)
         lastUpdateTime = currentTime
     end
 
@@ -336,7 +337,7 @@ function Lib:updateWorld(...)
             username = self.name,
             players = playersList
         }
-        sendToServer(currentPlayersMessage)
+        GCSN.sendToServer(currentPlayersMessage)
         lastPlayerListTime = currentTime
     end
 end
@@ -432,7 +433,7 @@ Utils.hook(EnemyBattler, "hurt", function (orig, enemy, amount, battler, on_defe
             index = num_index,
             amount = amount 
         }
-        sendToServer(msg)
+        GCSN.sendToServer(msg)
     end
 
     orig(enemy, amount, battler, on_defeat, color, show_status, attacked, ...)
@@ -450,7 +451,7 @@ Utils.hook(EnemyBattler, "spare", function (orig, enemy, pacify, ...)
             index = num_index,
             extra = pacify
         }
-        sendToServer(msg)
+        GCSN.sendToServer(msg)
     end
 
     orig(enemy, pacify, ...)
@@ -468,7 +469,7 @@ Utils.hook(EnemyBattler, "addMercy", function (orig, enemy, amount, message, ...
             index = num_index,
             amount = amount 
         }
-        sendToServer(msg)
+        GCSN.sendToServer(msg)
     end
 
     orig(enemy, amount, ...)
@@ -487,7 +488,7 @@ Utils.hook(EnemyBattler, "onDefeatRun", function (orig, enemy, damage, battler, 
             index = num_index,
             amount = amount 
         }
-        sendToServer(msg)
+        GCSN.sendToServer(msg)
     end
 
     orig(enemy, damage, battler, ...)
@@ -506,7 +507,7 @@ Utils.hook(EnemyBattler, "onDefeatFatal", function (orig, enemy, damage, battler
             index = num_index,
             amount = amount 
         }
-        sendToServer(msg)
+        GCSN.sendToServer(msg)
     end
 
     orig(enemy, damage, battler, ...)
@@ -523,7 +524,7 @@ Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
             subSubC = "freeze",
             index = num_index 
         }
-        sendToServer(msg)
+        GCSN.sendToServer(msg)
     end
 
     orig(enemy, ...)
@@ -555,6 +556,7 @@ function Lib:parseServerData(data)
                             if success then
                                 other_player:setActor(playerData.actor)
                             else
+                                Kristal.Console:warn("Unknown actor: "..tostring(playerData.actor))
                                 other_player:setActor("dummy")
                             end
                         end

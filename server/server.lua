@@ -1,5 +1,7 @@
+local enet = require("enet")
+
 ---@class Server
-local Server = {}
+local Server = class("Server")
 Server.__index = Server
 local TIMEOUT_THRESHOLD = 20
 
@@ -480,14 +482,5 @@ function Server:tick()
     -- Check for inactive players
     self:checkForInactivePlayers()
 end
-
-setmetatable(Server, {
-    __call = function (class, ...)
-        local t = {}
-        setmetatable(t, class)
-        t:init()
-        return t
-    end
-})
 
 return Server

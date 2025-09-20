@@ -1,4 +1,4 @@
-enet = require("enet")
+require("stupidclassystem")
 JSON = require("json")
 NBT = require("shared.nbt")
 ---@type Server

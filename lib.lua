@@ -320,6 +320,11 @@ function Lib:updateWorld(...)
             actor = player.actor.id,
             sprite = sprite_val
         }
+
+        if player.sprite.cust then --send custom sprite data
+            updateMessage.cust = player.sprite.cust
+        end
+
         GCSN.sendToServer(updateMessage)
         lastUpdateTime = currentTime
     end
@@ -571,6 +576,9 @@ function Lib:parseServerData(data)
                             other_player:setAnimation(dat)
                         end
 
+                        if playerData.cust then --Sync custom data
+                            other_player.sprite.cust = playerData.cust
+                        end
                     else
                         local otherplr
                         local success, result = pcall(Other_Player, playerData.actor, playerData.x, playerData.y, playerData.username, playerData.uuid)

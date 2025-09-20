@@ -114,7 +114,7 @@ function Server:sendUpdatesToClients()
                 player.party_number = nil
             end
             updates[player.map] = updates[player.map] or {}
-            table.insert(updates[player.map], {
+            local tab = {
                 uuid = id,
                 username = player.username,
                 x = player.x,
@@ -122,7 +122,13 @@ function Server:sendUpdatesToClients()
                 actor = player.actor,
                 sprite = player.sprite,
                 map = player.map
-            })
+            }
+
+            if player.cust then
+                tab.cust = player.cust
+            end
+
+            table.insert(updates[player.map], tab)
         end
     end
 
@@ -217,6 +223,10 @@ function Server:processClientMessage(client, data)
                 player.sprite = message.sprite
                 player.lastUpdate = love.timer.getTime()
                 player.state = "world"
+
+                if message.cust then
+                    player.cust = message.cust
+                end
 
             end
         elseif subCommand == "inMap" then

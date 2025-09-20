@@ -1,5 +1,6 @@
 local enet = require("enet")
 local Logger = require("server.logger")
+local NetPlayer = require("server.shared.netplayer")
 
 ---@class Server
 local Server = class("Server")
@@ -52,6 +53,10 @@ function Server:shutdown(message)
             command = "disconnect",
             message = message
         })
+    end
+    self.host:flush()
+    love.timer.sleep(.5)
+    for _, client in ipairs(self.clients) do
         client:disconnect()
         self:removePlayer(client)
     end
@@ -193,15 +198,7 @@ function Server:processClientMessage(client, data)
 
     if command == "register" then
         local id = message.uuid or uuid()
-        self.players[id] = {
-            username = message.username,
-            x = 0, y = 0, actor = message.actor or "dummy",
-            sprite = message.sprite or "walk/down", 
-            map = message.map or "default", 
-            uuid = id,
-            client = client,
-            lastUpdate = love.timer.getTime()
-        }
+        self.players[id] = NetPlayer(message, client, id)
         print("Player " .. message.username .. "(uuid=" .. id .. ") registered with actor: " .. self.players[id].actor)
         self:sendClientMessage(client, {
             command = "register",

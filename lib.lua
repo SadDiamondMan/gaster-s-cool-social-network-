@@ -593,6 +593,8 @@ function Lib:parseServerData(data)
             local bubble = ChatBubble(sender.actor, data.message)
             bubble:setScale(0.25)
             sender:addChild(bubble)
+        elseif data.command == "disconnect" then
+            self.chat_box:push({sender = "GCSN", content = data.message})
         elseif data.command == "RemoveOtherPlayersFromMap" then
             for _, uuid in ipairs(data.players) do
                 if self.other_players[uuid] then

@@ -13,8 +13,6 @@ end
 Registry.registerGlobal("gcsnSharedRequire", sharedRequire)
 gcsnSharedRequire = sharedRequire
 
-pluey = sharedRequire("nbt")
-
 function Lib.getConfig(conf)
     local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
     if not ok then return (Kristal.Config["plugins/gcsn"][conf] or ({

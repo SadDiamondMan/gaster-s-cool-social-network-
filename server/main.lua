@@ -6,7 +6,6 @@ end
 
 require("stupidclassystem")
 JSON = require("json")
-NBT = gcsnSharedRequire("nbt")
 ---@type Server
 local Server = require("server")
 

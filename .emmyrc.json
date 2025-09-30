@@ -3,11 +3,10 @@
         "enableReindex": false,
         "encoding": "utf-8",
         "ignoreDir": [
-            "server"
         ],
         "ignoreGlobs": [],
         "library": [
-            "/home/hyperboid/Applications/unnamedloveengine/.love_api",
+            "/home/hyperboid/Applications/raspberryengine/.love_api",
             "/home/hyperboid/Applications/Kristal"
         ],
         "moduleMap": [],
@@ -35,7 +34,7 @@
         },
         "extensions": [],
         "frameworkVersions": ["love2d"],
-        "requireLikeFunction": ["require"],
+        "requireLikeFunction": ["gcsnSharedRequire"],
         "requirePattern": [],
         "version": "LuaJIT"
     }

@@ -319,6 +319,12 @@ function Lib:updateWorld(...)
             sprite = sprite_val
         }
 
+        if type(sprite_val) == "table" then
+            for i=1,table.maxn(updateMessage.sprite) do
+                updateMessage.sprite[i] = updateMessage.sprite[i] or false
+            end
+        end
+
         if player.sprite.cust then --send custom sprite data
             updateMessage.cust = player.sprite.cust
         end

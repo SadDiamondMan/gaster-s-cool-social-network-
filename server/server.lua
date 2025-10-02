@@ -531,7 +531,8 @@ function Server:processPlayerCommand(player, command)
         local list = "Players:"
         for _, player in pairs(self.players) do
             list = (list .. "\n")
-            list = list .. player.username
+            list = list .. player.username .. " @ " .. player.map
+
         end
         player:sendSystemMessage(list)
         return true

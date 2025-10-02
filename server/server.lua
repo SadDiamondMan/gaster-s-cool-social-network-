@@ -2,6 +2,7 @@ local enet = require("enet")
 local Logger = require("logger")
 local NetPlayer = gcsnSharedRequire("netplayer")
 local StringUtils = gcsnSharedRequire("utils.string")
+local yaml = gcsnSharedRequire("lib.yaml")
 
 ---@class Server
 local Server = class("Server")
@@ -10,6 +11,12 @@ local TIMEOUT_THRESHOLD = 20
 
 function Server:init()
     self.logger = Logger("Server")
+    local file = (love.filesystem.newFile("userinfo.tsv") or love.filesystem.newFile("userinfo.example.tsv"))
+    file:open("r")
+    self.user_info = yaml.parseString(
+        file:read()
+    )
+    file:close()
 end
 
 function Server:start(hoststr)
@@ -209,6 +216,18 @@ function Server:sendBattleUpdatesToClients()
     end
 end
 
+---@param client any
+---@param message table
+---@return table?
+function Server:findUserInfo(client, message)
+    local ip, port = unpack(StringUtils.split(tostring(client), ":"))
+    for i,info in ipairs(self.user_info) do
+        if ip == info.ip then
+            return info
+        end
+    end
+end
+
 -- Handle client messages
 function Server:processClientMessage(client, data)
     local ok, message = pcall(JSON.decode, data)
@@ -219,6 +238,14 @@ function Server:processClientMessage(client, data)
 
     if command == "register" then
         local id = message.uuid or uuid()
+        local userinfo = self:findUserInfo(client, message)
+        local permission_level = 0
+        if userinfo then
+            if userinfo.permission_level then
+                
+            end
+        end
+        
         self.players[id] = NetPlayer(message, client, id)
         self.logger:info("Player " .. message.username .. " registered with actor: " .. self.players[id].actor)
         self.logger:debug("(uuid=" .. id .. ")")
@@ -531,7 +558,7 @@ function Server:processPlayerCommand(player, command)
         local list = "Players:"
         for _, player in pairs(self.players) do
             list = (list .. "\n")
-            list = list .. player.username
+            list = list .. player.username .. " " .. player.map
         end
         player:sendSystemMessage(list)
         return true

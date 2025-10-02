@@ -320,9 +320,7 @@ function Lib:updateWorld(...)
         }
 
         if type(sprite_val) == "table" then
-            for i=1,table.maxn(updateMessage.sprite) do
-                updateMessage.sprite[i] = updateMessage.sprite[i] or false
-            end
+            updateMessage.sprite = nil
         end
 
         if player.sprite.cust then --send custom sprite data
@@ -572,7 +570,7 @@ function Lib:parseServerData(data)
                         local dat = playerData.sprite
                         local Pspr = other_player.sprite
 
-                        local needs_update = (Pspr.anim and Pspr.anim ~= dat) or (not Pspr.anim and Pspr.sprite_options[1] ~= dat)
+                        local needs_update = ((Pspr.anim and Pspr.anim ~= dat) or (not Pspr.anim and Pspr.sprite_options[1] ~= dat)) and dat
 
                         if needs_update then
                             other_player:setSprite(dat)

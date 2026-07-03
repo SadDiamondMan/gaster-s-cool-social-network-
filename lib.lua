@@ -17,7 +17,7 @@ function Lib.getConfig(conf)
     local ok, result = pcall(Kristal.getLibConfig, "gasterscoolsocialnetwork", conf)
     if not ok then return (Kristal.Config["plugins/gcsn"][conf] or ({
         ["danger_mode"] = false,
-        ["domain"] = "serveo.net",
+        ["domain"] = "darkplacerebirth.org",
         ["chat_format"] = "%s: ",
         ["port"] = 25574
     })[conf]) end
@@ -64,7 +64,7 @@ function Lib:init()
     end)
     Utils.hook(Battle, "update", function (orig, batl, ...)
         orig(batl, ...)
-        self:updateBattle(batl)
+        self:updateWorld(batl)
     end)
     Utils.hook(BattleUI, "drawState", function (orig, batl_ui, ...)
         if Game.battle.state == "PARTYSELECT" then
@@ -292,10 +292,32 @@ function Lib:updateBattle(batl, ...)
 
 end
 
+
 function Lib:updateWorld(...)
-    local player = Game.world.player
+
+    local player = nil
+
+    if Game.battle then
+        player = Game.battle.battlers
+    elseif Game.world and Game.world.player then
+        player = {}
+        player[1] = Game.world.player
+        for i, follower in ipairs(Game.world.followers) do
+            player[#player + 1] = follower
+        end
+        player = Game.world.player
+    end
     -- Update the current time
-    if not Game.world.player then return end --need this since the player might not always exist
+    if not player then return end --need this since the player might not always exist
+
+    
+    --for i, players in ipairs(player) do
+        self:updatePlayer(player[1])
+    --end
+
+end
+
+function Lib:updatePlayer(player)
     local currentTime = love.timer.getTime()
 
     -- Throttle player position update packets
@@ -308,13 +330,19 @@ function Lib:updateWorld(...)
             sprite_val = player.sprite.sprite_options[1]
         end
 
+        local location = (Mod.info.id..":"..Game.world.map.id) or "null"
+
+        if Game.battle then
+            location = ("e:"..Mod.info.id..":"..Game.battle.encounter.id) or "null"
+        end
+
         local updateMessage = {
             command = "world",
             subCommand = "update",
             username = self.name,
             x = player.x,
             y = player.y,
-            map = (Mod.info.id..":"..Game.world.map.id) or "null",
+            map = location,
             actor = player.actor.id,
             sprite = sprite_val
         }
@@ -537,6 +565,35 @@ Utils.hook(EnemyBattler, "freeze", function (orig, enemy, ...)
     orig(enemy, ...)
 end)
 
+
+function Lib:createPlayer(playerData)
+
+    local otherplr
+
+    local success, result = pcall(Other_Player, playerData.actor, playerData.x, playerData.y, playerData.username, playerData.uuid)
+    if success then
+        otherplr = result
+    else
+        otherplr = Other_Player("dummy", playerData.x, playerData.y, playerData.username, playerData.uuid)
+    end
+
+    if playerData.map == (Mod.info.id..":"..Game.world.map.id) then
+        -- Create a new player if it doesn't exist while making sure It's on the right map
+        other_player = otherplr
+        other_player.layer = Game.world.map.object_layer
+        other_player.mapID = playerData.map
+        Game.world:addChild(other_player)
+        self.other_players[playerData.uuid] = other_player
+    elseif playerData.map == ("e:"..Mod.info.id..":"..Game.battle.encounter.id) then
+        other_player = otherplr
+        other_player.layer = -100
+        other_player.mapID = playerData.map
+        Game.battle:addChild(other_player)
+        self.other_players[playerData.uuid] = other_player
+    end
+
+end
+
 function Lib:parseServerData(data)
     if data then
         if data.command ~= "update" then
@@ -581,22 +638,7 @@ function Lib:parseServerData(data)
                             other_player.sprite.cust = playerData.cust
                         end
                     else
-                        local otherplr
-                        local success, result = pcall(Other_Player, playerData.actor, playerData.x, playerData.y, playerData.username, playerData.uuid)
-                        if success then
-                            otherplr = result
-                        else
-                            otherplr = Other_Player("dummy", playerData.x, playerData.y, playerData.username, playerData.uuid)
-                        end
-
-                        if playerData.map == (Mod.info.id..":"..Game.world.map.id) then
-                            -- Create a new player if it doesn't exist while making sure It's on the right map
-                            other_player = otherplr
-                            other_player.layer = Game.world.map.object_layer
-                            other_player.mapID = playerData.map
-                            Game.world:addChild(other_player)
-                            self.other_players[playerData.uuid] = other_player
-                        end
+                        self:createPlayer(playerData)
                     end
                 end
             end

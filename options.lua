@@ -25,7 +25,7 @@ function GCSNOptionsHandler:init(menu)
     self.menu = menu
     if Kristal.Config["plugins/gcsn"] == nil then
         Kristal.Config["plugins/gcsn"] = {
-            domain = "serveo.net",
+            domain = "darkplacerebirth.org",
             port = 25574,
         }
     end

@@ -151,11 +151,18 @@ function Server:sendUpdatesToClients()
     -- Send updates only to players on the same map, excluding the player's own UUID
     for id, player in pairs(self.players) do
         if player.client and updates[player.map] then
+
             -- Filter out the player's own UUID
             local filteredUpdates = {}
             for _, update in ipairs(updates[player.map]) do
                 if update.uuid ~= id then
-                    table.insert(filteredUpdates, update)
+                    if update.map:sub(1, 2) == "e:" then --player is in encounter
+                        if self.players[id].party == self.players[update.uuid].party then -- and if players share the same party
+                            table.insert(filteredUpdates, update)
+                        end
+                    else 
+                        table.insert(filteredUpdates, update)
+                    end
                 end
             end
 
@@ -559,6 +566,27 @@ function Server:processPlayerCommand(player, command)
             command = "teleport",
             x = x, y = y, map = map,
         })
+        return true
+    elseif command[1] == "party" then
+        local type = command[2]
+
+        if not command[3] then
+            player:sendSystemMessage("ERROr: No party specified.")
+            return true
+        end
+
+        if type == "join" then
+            player:sendSystemMessage("Joined: "..command[3]..".")
+            player.party = command[3]
+            return true
+        elseif type == "leave" then
+            player:sendSystemMessage("Left: "..player.party..".")
+            player.party = nil
+        else
+            player:sendSystemMessage("ERROr: please use either /party join [party] or /party leave")
+        end
+    elseif command[1] == "help" then
+        player:sendSystemMessage("/help --Lists off all commands\n/list --Lists off all online players \n/party join [party]\n/party leave")
         return true
     end
     return false

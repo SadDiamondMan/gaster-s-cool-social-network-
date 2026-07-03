@@ -297,14 +297,9 @@ function Lib:updateWorld(...)
 
     local player = nil
 
-    if Game.battle then
-        player = Game.battle.battlers
+    if Game.battle and Game.battle.party then
+        player = Game.battle.party[1]
     elseif Game.world and Game.world.player then
-        player = {}
-        player[1] = Game.world.player
-        for i, follower in ipairs(Game.world.followers) do
-            player[#player + 1] = follower
-        end
         player = Game.world.player
     end
     -- Update the current time
@@ -312,7 +307,7 @@ function Lib:updateWorld(...)
 
     
     --for i, players in ipairs(player) do
-        self:updatePlayer(player[1])
+        self:updatePlayer(player)
     --end
 
 end
